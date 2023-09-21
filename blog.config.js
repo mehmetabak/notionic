@@ -44,8 +44,8 @@ const BLOG = {
   notionDomain: 'arastir.notion.site',
   telegramToken: process.env.TELEGRAM_TOKEN, // The token of your Telegram bot
   telegramChatId: '263895784', // The chat id of your Telegram bot
-  telegramChannelUrl: 'https://channel.zuolan.me/', // The link of your Telegram channel
-  telegramChannelName: 'zuolan_me', // The name of your Telegram channel
+  telegramChannelUrl: 'https://t.me/kaynak_avcisi_bot', // The link of your Telegram channel
+  telegramChannelName: 'arasTiR', // The name of your Telegram channel
   craftConfigShareUrl: 'https://www.craft.me/s/TAcCxdntNBdSLW', // The link to share your craft config
   analytics: {
     provider: '', // Currently we support Google Analytics, Ackee, Umami and Cloudflare Insights, please fill with 'ga' or 'ackee' or 'umami' or 'cf', leave it empty to disable it.
