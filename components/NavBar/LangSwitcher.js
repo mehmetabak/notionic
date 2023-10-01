@@ -7,7 +7,7 @@ const LangSwitcher = () => {
 
   return (
     <>
-      <Link passHref href={asPath} locale={locale === 'tr' ? 'en' : 'tr'} scroll={false}>
+      <Link passHref href={asPath} locale={locale === 'en' ? 'tr' : 'en'} scroll={false}>
         <button
           aria-label='LangSwitcher'
           className='p-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer rounded-lg dark:text-gray-100'
