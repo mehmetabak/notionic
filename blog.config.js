@@ -44,7 +44,7 @@ const BLOG = {
   notionDomain: 'arastir.notion.site',
   telegramToken: process.env.TELEGRAM_TOKEN, // The token of your Telegram bot
   telegramChatId: '263895784', // The chat id of your Telegram bot
-  telegramChannelUrl: 'https://t.me/kaynak_avcisi_bot', // The link of your Telegram channel
+  telegramChannelUrl: 'https://t.me/+95YNliFbLK4yNzM8', // The link of your Telegram channel
   telegramChannelName: 'arasTiR', // The name of your Telegram channel
   craftConfigShareUrl: 'https://www.craft.me/s/TAcCxdntNBdSLW', // The link to share your craft config
   analytics: {
