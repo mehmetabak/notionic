@@ -43,19 +43,18 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
           <span className='ml-1'>{frontMatter.title}</span>
         </Link>
       )}
-      <div className='max-h-[80vh] overflow-y-auto'>
-        <div className='px-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg'>
-          {nodes.map(node => (
+      <div className='max-h-[calc(100vh - 12rem)] overflow-y-auto'>
+        {nodes.map(node => (
+          <div key={node.id} className='px-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg'>
             <a
-              key={node.id}
               data-target-id={node.id}
               className='block py-1 cursor-pointer'
               onClick={() => scrollTo(node.id)}
             >
               {node.text}
             </a>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   )
