@@ -35,7 +35,7 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
   return (
     <div
       className='hidden xl:block xl:fixed ml-4 text-sm text-gray-500 dark:text-gray-400 whitespace'
-      style={{ height: 'calc(100vh - 10px)', overflowY: 'auto', padding: '10px' }} //Fixxing scroll bug
+      style={{ maxHeight: 'calc(100vh - 20px)', overflowY: 'auto', paddingRight: '8px' }} //Fixxing scroll bug
     >
       {pageTitle && (
         <Link
