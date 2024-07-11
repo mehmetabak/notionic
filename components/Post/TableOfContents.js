@@ -3,8 +3,21 @@ import { getPageTableOfContents } from 'notion-utils'
 import Link from 'next/link'
 import { ChevronLeftIcon } from '@heroicons/react/outline'
 import BLOG from '@/blog.config'
+import { useState, useEffect } from 'react'
 
 export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
+  const [scrollPosition, setScrollPosition] = useState(0)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollPosition(document.documentElement.scrollTop || document.body.scrollTop)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
   let collectionId, page
   if (pageTitle) {
     collectionId = Object.keys(blockMap.block)[0]
@@ -23,41 +36,39 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
     id = id.replaceAll('-', '')
     const target = document.querySelector(`.notion-block-${id}`)
     if (!target) return
-    // `65` is the height of expanded nav
-    // TODO: Remove the magic number
-    const top = document.documentElement.scrollTop + target.getBoundingClientRect().top - 65
-    document.documentElement.scrollTo({
+    const top = scrollPosition + target.getBoundingClientRect().top - 65
+    window.scrollTo({
       top,
       behavior: 'smooth'
     })
   }
 
   return (
-    <div className="hidden xl:flex xl:flex-col xl:fixed top-0 bottom-0 ml-4 text-sm text-gray-500 dark:text-gray-400">
+    <div
+      className='hidden xl:block xl:fixed ml-4 text-sm text-gray-500 dark:text-gray-400 whitespace'
+    >
       {pageTitle && (
         <Link
           passHref
           href={`${BLOG.path}/${frontMatter.slug}`}
           scroll={false}
-          className="block -ml-6 mb-2 p-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg"
+          className='block -ml-6 mb-2 p-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg'
         >
-          <ChevronLeftIcon className="inline-block mb-1 h-5 w-5" />
-          <span className="ml-1">{frontMatter.title}</span>
+          <ChevronLeftIcon className='inline-block mb-1 h-5 w-5' />
+          <span className='ml-1'>{frontMatter.title}</span>
         </Link>
       )}
-      <div className="flex-grow overflow-y-auto p-2">
-        {nodes.map(node => (
-          <div key={node.id} className="px-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg">
-            <a
-              data-target-id={node.id}
-              className="block py-1 cursor-pointer"
-              onClick={() => scrollTo(node.id)}
-            >
-              {node.text}
-            </a>
-          </div>
-        ))}
-      </div>
+      {nodes.map(node => (
+        <div key={node.id} className='px-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg'>
+          <a
+            data-target-id={node.id}
+            className='block py-1 cursor-pointer'
+            onClick={() => scrollTo(node.id)}
+          >
+            {node.text}
+          </a>
+        </div>
+      ))}
     </div>
   )
 }
