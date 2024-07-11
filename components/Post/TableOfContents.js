@@ -1,55 +1,45 @@
-import PropTypes from 'prop-types';
-import { getPageTableOfContents } from 'notion-utils';
-import Link from 'next/link';
-import { ChevronLeftIcon } from '@heroicons/react/outline';
-import BLOG from '@/blog.config';
-import { useState } from 'react';
+import PropTypes from 'prop-types'
+import { getPageTableOfContents } from 'notion-utils'
+import Link from 'next/link'
+import { ChevronLeftIcon } from '@heroicons/react/outline'
+import BLOG from '@/blog.config'
 
 export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
-  const [scrollPosition, setScrollPosition] = useState(0);
-
-  // Scroll event listener to update scroll position
-  const handleScroll = () => {
-    setScrollPosition(window.scrollY);
-  };
-
-  // Attach scroll event listener on component mount
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  let collectionId, page;
+  let collectionId, page
   if (pageTitle) {
-    collectionId = Object.keys(blockMap.block)[0];
-    page = blockMap.block[collectionId].value;
+    collectionId = Object.keys(blockMap.block)[0]
+    page = blockMap.block[collectionId].value
   } else {
-    collectionId = Object.keys(blockMap.collection)[0];
-    page = Object.values(blockMap.block).find(block => block.value.parent_id === collectionId).value;
+    collectionId = Object.keys(blockMap.collection)[0]
+    page = Object.values(blockMap.block).find(block => block.value.parent_id === collectionId).value
   }
-  const nodes = getPageTableOfContents(page, blockMap);
-  if (!nodes.length) return null;
+  const nodes = getPageTableOfContents(page, blockMap)
+  if (!nodes.length) return null
 
   /**
-   * Scroll to the target heading block
    * @param {string} id - The ID of target heading block (could be in UUID format)
    */
-  function scrollTo(id) {
-    const idWithoutDashes = id.replaceAll('-', '');
-    const target = document.querySelector(`.notion-block-${idWithoutDashes}`);
-    if (!target) return;
-
-    const top = scrollPosition + target.getBoundingClientRect().top - 65;
-    window.scrollTo({
+  function scrollTo (id) {
+    id = id.replaceAll('-', '')
+    const target = document.querySelector(`.notion-block-${id}`)
+    if (!target) return
+    // `65` is the height of expanded nav
+    // TODO: Remove the magic number
+    const top = document.documentElement.scrollTop + target.getBoundingClientRect().top - 65
+    document.documentElement.scrollTo({
       top,
-      behavior: 'smooth',
-    });
+      behavior: 'smooth'
+    })
   }
 
   return (
-    <div className='hidden xl:block xl:fixed ml-4 text-sm text-gray-500 dark:text-gray-400 whitespace overflow-y-auto max-h-screen'>
+    <div
+      className='hidden xl:block xl:fixed ml-4 text-sm text-gray-500 dark:text-gray-400 whitespace'
+      style={{
+        maxHeight: 'calc(100vh - 4rem)', 
+        overflowY: 'auto'
+      }}
+    >
       {pageTitle && (
         <Link
           passHref
@@ -73,11 +63,11 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
         </div>
       ))}
     </div>
-  );
+  )
 }
 
 TableOfContents.propTypes = {
   blockMap: PropTypes.object.isRequired,
   frontMatter: PropTypes.object.isRequired,
-  pageTitle: PropTypes.string,
-};
+  pageTitle: PropTypes.string
+}
