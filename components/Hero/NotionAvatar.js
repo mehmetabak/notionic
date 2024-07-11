@@ -2,7 +2,7 @@
 import * as React from 'react'
 
 const NotionAvatar = (props) => (
-<svg
+  <svg
     style={{
       justifyContent: 'center',
       alignSelf: 'center',

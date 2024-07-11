@@ -1,10 +1,9 @@
 import BLOG from '@/blog.config.js'
 import Link from 'next/link'
 import ImageFallback from './Common/ImageFallback.js'
-import getCraftSlug from '@/lib/getCraftSlug'
 
 const NotePost = ({ note }) => {
-  const craftSlug = getCraftSlug(note.url)
+  const craftSlug = note.url.slice(23)
   return (
     <Link
       passHref
