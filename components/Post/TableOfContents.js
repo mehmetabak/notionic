@@ -55,6 +55,8 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
             </a>
           </div>
         ))}
+        {/* Placeholder div to ensure content height is correctly calculated */}
+        <div className='pb-4' />
       </div>
     </div>
   )
