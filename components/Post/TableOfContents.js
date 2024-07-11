@@ -33,32 +33,31 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
   }
 
   return (
-    <div
-      className='hidden xl:block xl:fixed ml-4 text-sm text-gray-500 dark:text-gray-400 whitespace'
-      style={{ maxHeight: 'calc(100vh - 20px)', overflowY: 'auto', paddingRight: '8px' }} //Fixxing scroll bug
-    >
+    <div className="hidden xl:block xl:fixed ml-4 text-sm text-gray-500 dark:text-gray-400 whitespace">
       {pageTitle && (
         <Link
           passHref
           href={`${BLOG.path}/${frontMatter.slug}`}
           scroll={false}
-          className='block -ml-6 mb-2 p-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg'
+          className="block -ml-6 mb-2 p-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg"
         >
-          <ChevronLeftIcon className='inline-block mb-1 h-5 w-5' />
-          <span className='ml-1'>{frontMatter.title}</span>
+          <ChevronLeftIcon className="inline-block mb-1 h-5 w-5" />
+          <span className="ml-1">{frontMatter.title}</span>
         </Link>
       )}
-      {nodes.map(node => (
-        <div key={node.id} className='px-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg'>
-          <a
-            data-target-id={node.id}
-            className='block py-1 cursor-pointer'
-            onClick={() => scrollTo(node.id)}
-          >
-            {node.text}
-          </a>
-        </div>
-      ))}
+      <div style={{ maxHeight: 'calc(100vh - 20px)', overflowY: 'auto' }}>
+        {nodes.map(node => (
+          <div key={node.id} className="px-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg">
+            <a
+              data-target-id={node.id}
+              className="block py-1 cursor-pointer"
+              onClick={() => scrollTo(node.id)}
+            >
+              {node.text}
+            </a>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
