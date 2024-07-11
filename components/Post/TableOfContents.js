@@ -3,18 +3,19 @@ import { getPageTableOfContents } from 'notion-utils';
 import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/outline';
 import BLOG from '@/blog.config';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
   const [scrollPosition, setScrollPosition] = useState(0);
 
+  // Scroll event listener to update scroll position
+  const handleScroll = () => {
+    setScrollPosition(window.scrollY);
+  };
+
+  // Attach scroll event listener on component mount
   useEffect(() => {
-    const handleScroll = () => {
-      setScrollPosition(window.scrollY);
-    };
-
     window.addEventListener('scroll', handleScroll);
-
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
@@ -32,6 +33,7 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
   if (!nodes.length) return null;
 
   /**
+   * Scroll to the target heading block
    * @param {string} id - The ID of target heading block (could be in UUID format)
    */
   function scrollTo(id) {
@@ -47,7 +49,7 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
   }
 
   return (
-    <div className='hidden xl:block xl:fixed ml-4 text-sm text-gray-500 dark:text-gray-400 whitespace'>
+    <div className='hidden xl:block xl:fixed ml-4 text-sm text-gray-500 dark:text-gray-400 whitespace overflow-y-auto max-h-screen'>
       {pageTitle && (
         <Link
           passHref
