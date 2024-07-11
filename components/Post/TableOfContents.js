@@ -19,11 +19,11 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
   /**
    * @param {string} id - The ID of target heading block (could be in UUID format)
    */
-  function scrollTo(id) {
+  function scrollTo (id) {
     id = id.replaceAll('-', '')
     const target = document.querySelector(`.notion-block-${id}`)
     if (!target) return
-    const top = target.getBoundingClientRect().top + window.scrollY - 65
+    const top = target.getBoundingClientRect().top + window.pageYOffset - 65
     window.scrollTo({
       top,
       behavior: 'smooth'
