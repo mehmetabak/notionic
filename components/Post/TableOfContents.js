@@ -1,54 +1,60 @@
-import PropTypes from 'prop-types'
-import { getPageTableOfContents } from 'notion-utils'
-import Link from 'next/link'
-import { ChevronLeftIcon } from '@heroicons/react/outline'
-import BLOG from '@/blog.config'
+import PropTypes from 'prop-types';
+import { getPageTableOfContents } from 'notion-utils';
+import Link from 'next/link';
+import { ChevronLeftIcon } from '@heroicons/react/outline';
+import BLOG from '@/blog.config';
 
-export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
-  let collectionId, page
+export default function TableOfContents({ blockMap, frontMatter, pageTitle }) {
+  let collectionId, page;
   if (pageTitle) {
-    collectionId = Object.keys(blockMap.block)[0]
-    page = blockMap.block[collectionId].value
+    collectionId = Object.keys(blockMap.block)[0];
+    page = blockMap.block[collectionId].value;
   } else {
-    collectionId = Object.keys(blockMap.collection)[0]
-    page = Object.values(blockMap.block).find(block => block.value.parent_id === collectionId).value
+    collectionId = Object.keys(blockMap.collection)[0];
+    page = Object.values(blockMap.block).find((block) => block.value.parent_id === collectionId).value;
   }
-  const nodes = getPageTableOfContents(page, blockMap)
-  if (!nodes.length) return null
+  const nodes = getPageTableOfContents(page, blockMap);
+  if (!nodes.length) return null;
 
   /**
    * @param {string} id - The ID of target heading block (could be in UUID format)
    */
-  function scrollTo (id) {
-    id = id.replaceAll('-', '')
-    const target = document.querySelector(`.notion-block-${id}`)
-    if (!target) return
-    const top = target.getBoundingClientRect().top + window.pageYOffset - 65
+  function scrollTo(id) {
+    id = id.replaceAll('-', '');
+    const target = document.querySelector(`.notion-block-${id}`);
+    if (!target) return;
+    const top = target.getBoundingClientRect().top + window.pageYOffset - 65;
     window.scrollTo({
       top,
-      behavior: 'smooth'
-    })
+      behavior: 'smooth',
+    });
   }
 
   return (
-    <div className='hidden xl:block xl:fixed ml-4 text-sm text-gray-500 dark:text-gray-400 whitespace'>
+    <div className="hidden xl:block xl:fixed ml-4 text-sm text-gray-500 dark:text-gray-400 whitespace">
       {pageTitle && (
         <Link
           passHref
           href={`${BLOG.path}/${frontMatter.slug}`}
           scroll={false}
-          className='block -ml-6 mb-2 p-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg'
+          className="block -ml-6 mb-2 p-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg"
         >
-          <ChevronLeftIcon className='inline-block mb-1 h-5 w-5' />
-          <span className='ml-1'>{frontMatter.title}</span>
+          <ChevronLeftIcon className="inline-block mb-1 h-5 w-5" />
+          <span className="ml-1">{frontMatter.title}</span>
         </Link>
       )}
-      <div className='max-h-[calc(100vh - 4rem)] overflow-y-auto'>
-        {nodes.map(node => (
-          <div key={node.id} className='px-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg'>
+      <div
+        className="max-h-[80vh] overflow-y-auto"
+        style={{ maxHeight: '80vh' }}
+      >
+        {nodes.map((node) => (
+          <div
+            key={node.id}
+            className="px-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg"
+          >
             <a
               data-target-id={node.id}
-              className='block py-1 cursor-pointer'
+              className="block py-1 cursor-pointer"
               onClick={() => scrollTo(node.id)}
             >
               {node.text}
@@ -57,11 +63,11 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 TableOfContents.propTypes = {
   blockMap: PropTypes.object.isRequired,
   frontMatter: PropTypes.object.isRequired,
-  pageTitle: PropTypes.string
-}
+  pageTitle: PropTypes.string,
+};
