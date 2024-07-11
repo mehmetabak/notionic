@@ -23,8 +23,6 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
     id = id.replaceAll('-', '')
     const target = document.querySelector(`.notion-block-${id}`)
     if (!target) return
-    // `65` is the height of expanded nav
-    // TODO: Remove the magic number
     const top = document.documentElement.scrollTop + target.getBoundingClientRect().top - 65
     document.documentElement.scrollTo({
       top,
@@ -33,13 +31,7 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
   }
 
   return (
-    <div
-      className='hidden xl:block xl:fixed ml-4 text-sm text-gray-500 dark:text-gray-400 whitespace'
-      style={{
-        maxHeight: 'calc(100vh - 4rem)', 
-        overflowY: 'auto'
-      }}
-    >
+    <div className='hidden xl:block xl:fixed ml-4 text-sm text-gray-500 dark:text-gray-400 whitespace'>
       {pageTitle && (
         <Link
           passHref
@@ -51,17 +43,19 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
           <span className='ml-1'>{frontMatter.title}</span>
         </Link>
       )}
-      {nodes.map(node => (
-        <div key={node.id} className='px-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg'>
-          <a
-            data-target-id={node.id}
-            className='block py-1 cursor-pointer'
-            onClick={() => scrollTo(node.id)}
-          >
-            {node.text}
-          </a>
-        </div>
-      ))}
+      <div className='max-h-[80vh] overflow-y-auto'>
+        {nodes.map(node => (
+          <div key={node.id} className='px-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg'>
+            <a
+              data-target-id={node.id}
+              className='block py-1 cursor-pointer'
+              onClick={() => scrollTo(node.id)}
+            >
+              {node.text}
+            </a>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
