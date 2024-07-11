@@ -73,7 +73,7 @@ module.exports = async (req, res) => {
         <img alt="Twitter" src="${siteConfigObj['Second Social Icon']}" />
       </a>
       <a target="_blank" href=${siteConfigObj['Third Social Link']}>
-        <img alt="Giithub" src="${siteConfigObj['Third Social Icon']}" />
+        <img alt="Github" src="${siteConfigObj['Third Social Icon']}" />
       </a>
     </div>
 
