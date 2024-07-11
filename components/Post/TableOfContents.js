@@ -23,8 +23,8 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
     id = id.replaceAll('-', '')
     const target = document.querySelector(`.notion-block-${id}`)
     if (!target) return
-    const top = document.documentElement.scrollTop + target.getBoundingClientRect().top - 65
-    document.documentElement.scrollTo({
+    const top = target.getBoundingClientRect().top + window.pageYOffset - 65
+    window.scrollTo({
       top,
       behavior: 'smooth'
     })
@@ -43,7 +43,7 @@ export default function TableOfContents ({ blockMap, frontMatter, pageTitle }) {
           <span className='ml-1'>{frontMatter.title}</span>
         </Link>
       )}
-      <div className='max-h-[calc(100vh - 12rem)] overflow-y-auto'>
+      <div className='max-h-[calc(100vh - 4rem)] overflow-y-auto'>
         {nodes.map(node => (
           <div key={node.id} className='px-2 hover:bg-gray-200 hover:dark:bg-gray-700 rounded-lg'>
             <a
