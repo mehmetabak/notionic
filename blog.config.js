@@ -30,7 +30,7 @@ const BLOG = {
   defaultCover: '/cover.jpg',
   socialLink: {
     twitter: 'https://twitter.com/Mehmetn45363159',
-    github: 'https://github.com/memoli0',
+    github: 'https://github.com/mehmetabak',
     telegram: 'https://t.me/RedGianTR',
     medium: 'https://medium.com/@mehmetnurAbak'
   },
