@@ -1,6 +1,6 @@
 import BLOG from '@/blog.config'
 import dynamic from 'next/dynamic'
-//import { useEffect } from 'react'
+import { useEffect } from 'react'
 
 const UtterancesComponent = dynamic(
   () => {
@@ -16,7 +16,7 @@ const SupaCommentsComponent = dynamic(
 )
 
 const Comments = ({ frontMatter }) => {
-  /*
+  
   useEffect(() => {
     return () => {
       const commentsContainer = document.getElementById('comments')
@@ -25,7 +25,7 @@ const Comments = ({ frontMatter }) => {
       }
     }
   }, [])
-  */
+  
   return (
     <div>
       {BLOG.comment && BLOG.comment.provider === 'utterances' && (

@@ -5,19 +5,21 @@ import { useRouter } from 'next/router'
 const SupaComments = () => {
   const { locale, asPath } = useRouter()
   useEffect(() => {
-    /*
+    
     const scriptId = 'supacomments-script'
     const existingScript = document.getElementById(scriptId)
     if (existingScript) {
       existingScript.remove()
     }
-    */
+    
     const script = document.createElement('script')
     const anchor = document.getElementById('comments')
     script.setAttribute('src', `/comments/comments-${locale}.js`)
     script.setAttribute('crossorigin', 'anonymous')
     script.setAttribute('async', true)
-    //script.setAttribute('id', scriptId)
+
+    script.setAttribute('id', scriptId)
+    
     anchor.appendChild(script)
     return () => {
       anchor.innerHTML = ''
