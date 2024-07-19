@@ -38,7 +38,6 @@ function MyApp({ Component, pageProps }) {
     }
     const handleStop = () => {
       NProgress.done()
-      window.location.reload()
     }
 
     router.events.on('routeChangeStart', handleStart)
