@@ -1,7 +1,7 @@
 const BLOG = {
   title: 'm0s',
   author: 'Mehmet Abak',
-  email: 'mehmetnurabak0@gmail.com',
+  email: 'mehmetabak@proton.me',
   link: 'https://m0s.space',
   newsletter: 'Notionic Weekly',
   description: 'a developers Blog',
