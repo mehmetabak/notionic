@@ -2,7 +2,7 @@ const BLOG = {
   title: 'm0s',
   author: 'Mehmet Abak',
   email: 'mehmetnurabak0@gmail.com',
-  link: 'https://m0s.vercel.app',
+  link: 'https://m0s.space',
   newsletter: 'Notionic Weekly',
   description: 'a developers Blog',
   lang: 'en-US', // ['en-US', 'zh-CN', 'zh-HK', 'zh-TW', 'ja-JP', 'es-ES', 'tr-TR']
