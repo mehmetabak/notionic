@@ -29,7 +29,7 @@ const BLOG = {
   ogImageGenerateHost: 'og-zl.vercel.app', // The link to generate OG image, don't end with a slash
   defaultCover: '/cover.jpg',
   socialLink: {
-    twitter: 'https://twitter.com/Mehmetn45363159',
+    twitter: 'https://twitter.com/mehmet_m0s',
     github: 'https://github.com/mehmetabak',
     telegram: 'https://t.me/RedGianTR',
     medium: 'https://abakmehmet.medium.com/'
