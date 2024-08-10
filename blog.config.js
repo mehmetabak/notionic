@@ -32,7 +32,7 @@ const BLOG = {
     twitter: 'https://twitter.com/Mehmetn45363159',
     github: 'https://github.com/mehmetabak',
     telegram: 'https://t.me/RedGianTR',
-    medium: 'https://medium.com/@mehmetnurAbak'
+    medium: 'https://abakmehmet.medium.com/'
   },
   seo: {
     keywords: ['Notionic', 'Developer', 'Blog'],
