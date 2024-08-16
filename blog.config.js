@@ -3,8 +3,8 @@ const BLOG = {
   author: 'Mehmet Abak',
   email: 'mehmetabak@proton.me',
   link: 'https://m0s.space',
-  newsletter: 'Notionic Weekly',
-  description: 'a developers Blog',
+  newsletter: 'm0s Weekly',
+  description: 'a developer\'s blog',
   lang: 'en-US', // ['en-US', 'zh-CN', 'zh-HK', 'zh-TW', 'ja-JP', 'es-ES', 'tr-TR']
   timezone: 'Asia/Istanbul', // See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for all options.
   appearance: 'auto', // ['light', 'dark', 'auto'],
@@ -35,7 +35,7 @@ const BLOG = {
     medium: 'https://abakmehmet.medium.com/'
   },
   seo: {
-    keywords: ['Notionic', 'Developer', 'Blog'],
+    keywords: ['Mehmet', 'Developer', 'Blog'],
     googleSiteVerification: '' // Remove the value or replace it with your own google site verification code
   },
   notionPageId: process.env.NOTION_PAGE_ID, // DO NOT CHANGE THIS! Edit .env file!
