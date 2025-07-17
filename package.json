@@ -26,7 +26,7 @@
     "feed": "^4.2.2",
     "framer-motion": "6.4.3",
     "got": "^12.5.3",
-    "next": "^13.2.4",
+    "next": "^15.4.1",
     "next-themes": "^0.1.1",
     "notion-client": "^6.16.0",
     "notion-utils": "^6.16.0",
@@ -37,8 +37,8 @@
     "prism-theme-vars": "^0.2.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-notion-x": "^6.16.0",
-    "sharp": "^0.30.5",
+    "react-notion-x": "^7.4.2",
+    "sharp": "^0.34.3",
     "use-ackee": "^3.0.0"
   },
   "devDependencies": {
