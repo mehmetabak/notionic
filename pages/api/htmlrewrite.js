@@ -13,7 +13,8 @@ async function getBlockItem(path) {
   return { blockItem: null, siteConfigObj }
 }
 
-module.exports = async (req, res) => {
+// fix:0
+export default async function handler(req, res) { // Fonksiyona 'handler' gibi bir isim verebiliriz
   // const { pathname, slug } = req.query
   const { pathname } = req.query
   let realPath
