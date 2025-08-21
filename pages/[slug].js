@@ -1,3 +1,5 @@
+// pages/[slug].js
+
 import Layout from '@/layouts/layout'
 import { getAllPosts, getPostBlocks } from '@/lib/notion'
 import BLOG from '@/blog.config'
@@ -6,12 +8,14 @@ import Loading from '@/components/Loading'
 import NotFound from '@/components/NotFound'
 
 const Post = ({ post, blockMap }) => {
+  // ... your component code remains the same
   const router = useRouter()
   if (router.isFallback) {
-    return <Loading />
+    return (
+      <Loading />
+    )
   }
   if (!post) {
-
     return <NotFound statusCode={404} />
   }
   return (
@@ -20,33 +24,28 @@ const Post = ({ post, blockMap }) => {
 }
 
 export async function getStaticPaths() {
-  try {
-    const posts = await getAllPosts({ onlyNewsletter: false })
-
-    const validPosts = posts.filter(post => post && post.slug)
-
-    return {
-      paths: validPosts.map((row) => `${BLOG.path}/${row.slug}`),
-      fallback: true
-    }
-  } catch (error) {
-    console.error('Failed to get posts for static paths:', error)
-    return {
-      paths: [],
-      fallback: true
-    }
+  const posts = await getAllPosts({ onlyNewsletter: false })
+  return {
+    // ✅ FIX: Filter out any posts that are missing a slug before mapping.
+    paths: posts
+      .filter(post => post && post.slug)
+      .map(post => `${BLOG.path}/${post.slug}`),
+    fallback: true
   }
 }
 
 export async function getStaticProps({ params: { slug } }) {
-  try {
-    const posts = await getAllPosts({ onlyNewsletter: false })
-    const post = posts.find((t) => t && t.slug === slug) // Added check for `t`
+  // Keep the previous fix here as a safety net for manually entered URLs
+  const posts = await getAllPosts({ onlyNewsletter: false })
+  const post = posts.find((t) => t.slug === slug)
 
-    if (!post || !post.id) {
-      return { notFound: true }
+  if (!post) {
+    return {
+      notFound: true
     }
+  }
 
+  try {
     const blockMap = await getPostBlocks(post.id)
     return {
       props: {
@@ -56,9 +55,11 @@ export async function getStaticProps({ params: { slug } }) {
       revalidate: 1
     }
   } catch (err) {
-    console.error(`Failed to get static props for slug: ${slug}`, err)
-
-    return { notFound: true }
+    console.error(err)
+    // If Notion API fails for a specific page, you can show a 404 or a custom error page.
+    return {
+      notFound: true
+    }
   }
 }
 
