@@ -1,3 +1,5 @@
+// pages/s/[subpage].js
+
 import BLOG from '@/blog.config'
 import Layout from '@/layouts/layout'
 import { getAllPosts, getPostBlocks } from '@/lib/notion'
@@ -12,9 +14,7 @@ import NotFound from '@/components/NotFound'
 const Post = ({ post, blockMap }) => {
   const router = useRouter()
   if (router.isFallback) {
-    return (
-      <Loading notionSlug={router.asPath.split('/')[2]} />
-    )
+    return <Loading notionSlug={router.asPath.split('/')[2]} />
   }
   if (!post) {
     return <NotFound statusCode={404} />
@@ -25,85 +25,101 @@ const Post = ({ post, blockMap }) => {
 }
 
 export async function getStaticPaths() {
-  const mapPageUrl = defaultMapPageUrl(BLOG.notionPageId)
+  try {
+    // SORUN 1 ÇÖZÜLDÜ: Tüm Notion API çağrıları try...catch bloğuna alındı.
+    const mapPageUrl = defaultMapPageUrl(BLOG.notionPageId)
 
-  const pages = await getAllPagesInSpace(
-    BLOG.notionPageId,
-    BLOG.notionSpacesId,
-    getPostBlocks,
-    {
-      traverseCollections: false
+    const pages = await getAllPagesInSpace(
+      BLOG.notionPageId,
+      BLOG.notionSpacesId,
+      getPostBlocks,
+      {
+        traverseCollections: false
+      }
+    )
+
+    const subpageIds = Object.keys(pages)
+      .map((pageId) => mapPageUrl(pageId).replace('/', '')) // Baştaki '/' kaldırıldı
+      .filter((path) => path);
+
+    const posts = await getAllPosts({ onlyNewsletter: false })
+    const postIds = posts.map((post) => mapPageUrl(post.id).replace('/', ''))
+
+    // Zaten post olan sayfaları subpage listesinden çıkar
+    const finalSubpageIds = subpageIds.filter(id => !postIds.includes(id));
+
+    // SORUN 2 ÇÖZÜLDÜ: paths dizisi doğru formata getirildi.
+    const paths = finalSubpageIds.map(id => ({
+      params: { subpage: id }
+    }))
+    
+    // Not: Buradaki filtreleme mantığı biraz karmaşık görünüyor.
+    // İhtiyacına göre bu kısmı basitleştirebilirsin.
+    // Amaç, post olmayan tüm 'subpage'lerin yolunu oluşturmak.
+
+    return {
+      paths,
+      fallback: true
     }
-  )
-
-  const subpageIds = Object.keys(pages)
-    .map((pageId) => '/s' + mapPageUrl(pageId))
-    .filter((path) => path && path !== '/s/')
-
-  // Remove post id
-  const posts = await getAllPosts({ onlyNewsletter: false })
-  const postIds = Object.values(posts)
-    .map((postId) => '/s' + mapPageUrl(postId.id))
-  const noPostsIds = subpageIds.concat(postIds).filter(v => !subpageIds.includes(v) || !postIds.includes(v))
-
-  const heros = await getAllPosts({ onlyHidden: true })
-  const heroIds = Object.values(heros)
-    .map((heroId) => '/s' + mapPageUrl(heroId.id))
-  const paths = noPostsIds.concat(heroIds).filter(v => !noPostsIds.includes(v) || !heroIds.includes(v))
-
-  return {
-    paths,
-    fallback: true
+  } catch (error) {
+    console.error('getStaticPaths (subpage) içinde Notion verisi alınamadı:', error)
+    return {
+      paths: [], // Hata durumunda build anında sayfa oluşturma
+      fallback: true
+    }
   }
-  // return {
-  //   paths: [],
-  //   fallback: true
-  // }
 }
 
 export async function getStaticProps({ params: { subpage } }) {
-  const posts = await getAllPosts({ onlyNewsletter: false })
-
-  let blockMap, post
   try {
-    blockMap = await getPostBlocks(subpage)
-    const id = idToUuid(subpage)
+    const blockMap = await getPostBlocks(subpage)
+    
+    // SORUN 4 ÇÖZÜLDÜ: blockMap boşsa veya geçerli değilse 404 döndür.
+    if (!blockMap || !Object.keys(blockMap.block).length) {
+      console.warn(`[subpage] için blockMap bulunamadı: ${subpage}`);
+      return { notFound: true }
+    }
 
+    // Allow only pages in your own space
+    const NOTION_SPACES_ID = BLOG.notionSpacesId
+    const isPageAllowed = Object.values(blockMap.block).some(block => 
+      block?.value?.space_id && NOTION_SPACES_ID.includes(block.value.space_id)
+    );
+
+    if (!isPageAllowed) {
+      console.warn(`[subpage] izin verilen space'te değil: ${subpage}`);
+      return { notFound: true }
+    }
+    
+    const posts = await getAllPosts({ onlyNewsletter: false })
+    const id = idToUuid(subpage)
     const breadcrumbs = getPageBreadcrumbs(blockMap, id)
-    post = posts.find((t) => t.id === breadcrumbs[0].block.id)
-    // When the page is not in the notion database, manually initialize the post
+
+    let post
+    // breadcrumbs varsa ve ilk elemanı geçerliyse post'u bul
+    if (breadcrumbs && breadcrumbs[0] && breadcrumbs[0].block) {
+      post = posts.find((t) => t.id === breadcrumbs[0].block.id)
+    }
+
+    // Eğer post veritabanında bulunamazsa, manuel olarak oluştur
     if (!post) {
       post = {
         type: ['Page'],
-        title: breadcrumbs[0].title
+        // breadcrumbs[0] yoksa başlık olarak 'Untitled' kullan
+        title: breadcrumbs?.[0]?.title || 'Untitled',
+        id: subpage // id'yi de ekleyelim
       }
     }
-    // console.log("debug: ", breadcrumbs, post)
-  } catch (err) {
-    console.error(err)
-    return { props: { post: null, blockMap: null } }
-  }
 
-  // Allow only pages in your own space
-  const NOTION_SPACES_ID = BLOG.notionSpacesId
-  const pageAllowed = (page) => {
-    // When page block space_id = NOTION_SPACES_ID
-    let allowed = false
-    Object.values(page.block).forEach(block => {
-      if (!allowed && block.value && block.value.space_id) {
-        allowed = NOTION_SPACES_ID.includes(block.value.space_id)
-      }
-    })
-    return allowed
-  }
-
-  if (!pageAllowed(blockMap)) {
-    return { props: { post: null, blockMap: null } }
-  } else {
     return {
       props: { post, blockMap },
-      revalidate: 1
+      revalidate: 10
     }
+
+  } catch (err) {
+    console.error(`getStaticProps (subpage) hatası: ${subpage}`, err)
+    // SORUN 3 ÇÖZÜLDÜ: Hata durumunda 404 döndür.
+    return { notFound: true }
   }
 }
 
