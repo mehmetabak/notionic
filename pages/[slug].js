@@ -32,6 +32,12 @@ export async function getStaticProps({ params: { slug } }) {
   const posts = await getAllPosts({ onlyNewsletter: false })
   const post = posts.find((t) => t.slug === slug)
 
+  if (!post) {
+    return {
+      notFound: true
+    }
+  }
+
   try {
     const blockMap = await getPostBlocks(post.id)
     return {
