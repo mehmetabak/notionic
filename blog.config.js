@@ -77,7 +77,6 @@ const BLOG = {
       repo: ''
     }
   },
-  revalidateTime: 3600, // The revalidate time in seconds, default is 3600 seconds (1 hour)
   isProd: process.env.VERCEL_ENV === 'production' // distinguish between development and production environment (ref: https://vercel.com/docs/environment-variables#system-environment-variables)
 }
 // export default BLOG
