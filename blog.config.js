@@ -24,7 +24,7 @@ const BLOG = {
     friends: true
   },
   showWeChatPay: false,
-  previewImagesEnabled: false, // Enable preview images in Notion renderer
+  previewImagesEnabled: true, // Enable preview images in Notion renderer
   autoCollapsedNavBar: false, // The automatically collapsed navigation bar
   ogImageGenerateHost: 'og-zl.vercel.app', // The link to generate OG image, don't end with a slash
   defaultCover: '/cover.jpg',
