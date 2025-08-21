@@ -1,3 +1,4 @@
+// [subpage].js - Optimized version
 import BLOG from '@/blog.config'
 import Layout from '@/layouts/layout'
 import { getAllPosts, getPostBlocks } from '@/lib/notion'
@@ -11,100 +12,137 @@ import NotFound from '@/components/NotFound'
 
 const Post = ({ post, blockMap }) => {
   const router = useRouter()
+  
   if (router.isFallback) {
-    return (
-      <Loading notionSlug={router.asPath.split('/')[2]} />
-    )
+    return <Loading notionSlug={router.asPath.split('/')[2]} />
   }
+  
   if (!post) {
     return <NotFound statusCode={404} />
   }
+  
   return (
-    <Layout blockMap={blockMap} frontMatter={post} fullWidth={post.fullWidth} />
+    <Layout 
+      blockMap={blockMap} 
+      frontMatter={post} 
+      fullWidth={post.fullWidth} 
+    />
   )
 }
 
 export async function getStaticPaths() {
-  const mapPageUrl = defaultMapPageUrl(BLOG.notionPageId)
+  try {
+    const mapPageUrl = defaultMapPageUrl(BLOG.notionPageId)
 
-  const pages = await getAllPagesInSpace(
-    BLOG.notionPageId,
-    BLOG.notionSpacesId,
-    getPostBlocks,
-    {
-      traverseCollections: false
+    // Tüm sayfaları al
+    const pages = await getAllPagesInSpace(
+      BLOG.notionPageId,
+      BLOG.notionSpacesId,
+      getPostBlocks,
+      {
+        traverseCollections: false
+      }
+    )
+
+    // Subpage ID'lerini oluştur
+    const subpageIds = Object.keys(pages)
+      .map((pageId) => '/s' + mapPageUrl(pageId))
+      .filter((path) => path && path !== '/s/')
+
+    // Post ve hero ID'lerini paralel olarak al
+    const [posts, heros] = await Promise.all([
+      getAllPosts({ onlyNewsletter: false }),
+      getAllPosts({ onlyHidden: true })
+    ])
+
+    // Post ID'lerini mapla
+    const postIds = posts.map((post) => '/s' + mapPageUrl(post.id))
+    
+    // Hero ID'lerini mapla
+    const heroIds = heros.map((hero) => '/s' + mapPageUrl(hero.id))
+
+    // Filtreleme işlemini optimize et
+    const filteredSubpages = subpageIds.filter(id => 
+      !postIds.includes(id) && !heroIds.includes(id)
+    )
+    
+    const allPaths = [...filteredSubpages, ...heroIds]
+
+    return {
+      paths: allPaths,
+      fallback: true
     }
-  )
-
-  const subpageIds = Object.keys(pages)
-    .map((pageId) => '/s' + mapPageUrl(pageId))
-    .filter((path) => path && path !== '/s/')
-
-  // Remove post id
-  const posts = await getAllPosts({ onlyNewsletter: false })
-  const postIds = Object.values(posts)
-    .map((postId) => '/s' + mapPageUrl(postId.id))
-  const noPostsIds = subpageIds.concat(postIds).filter(v => !subpageIds.includes(v) || !postIds.includes(v))
-
-  const heros = await getAllPosts({ onlyHidden: true })
-  const heroIds = Object.values(heros)
-    .map((heroId) => '/s' + mapPageUrl(heroId.id))
-  const paths = noPostsIds.concat(heroIds).filter(v => !noPostsIds.includes(v) || !heroIds.includes(v))
-
-  return {
-    paths,
-    fallback: true
+  } catch (error) {
+    console.error('Error in getStaticPaths:', error)
+    return {
+      paths: [],
+      fallback: true
+    }
   }
-  // return {
-  //   paths: [],
-  //   fallback: true
-  // }
 }
 
 export async function getStaticProps({ params: { subpage } }) {
-  const posts = await getAllPosts({ onlyNewsletter: false })
-
-  let blockMap, post
   try {
-    blockMap = await getPostBlocks(subpage)
-    const id = idToUuid(subpage)
+    // BlockMap ve posts'u paralel olarak al
+    const [blockMap, posts] = await Promise.all([
+      getPostBlocks(subpage),
+      getAllPosts({ onlyNewsletter: false })
+    ])
 
+    const id = idToUuid(subpage)
     const breadcrumbs = getPageBreadcrumbs(blockMap, id)
-    post = posts.find((t) => t.id === breadcrumbs[0].block.id)
-    // When the page is not in the notion database, manually initialize the post
-    if (!post) {
+    
+    // Post'u bul veya manuel olarak oluştur
+    let post = posts.find((t) => t.id === breadcrumbs[0]?.block?.id)
+    
+    if (!post && breadcrumbs[0]) {
       post = {
         type: ['Page'],
-        title: breadcrumbs[0].title
+        title: breadcrumbs[0].title,
+        id: breadcrumbs[0].block?.id || id
       }
     }
-    // console.log("debug: ", breadcrumbs, post)
-  } catch (err) {
-    console.error(err)
-    return { props: { post: null, blockMap: null } }
-  }
 
-  // Allow only pages in your own space
-  const NOTION_SPACES_ID = BLOG.notionSpacesId
-  const pageAllowed = (page) => {
-    // When page block space_id = NOTION_SPACES_ID
-    let allowed = false
-    Object.values(page.block).forEach(block => {
-      if (!allowed && block.value && block.value.space_id) {
-        allowed = NOTION_SPACES_ID.includes(block.value.space_id)
+    // Sayfa izin kontrolü
+    if (!isPageAllowed(blockMap)) {
+      return { 
+        props: { 
+          post: null, 
+          blockMap: null 
+        } 
       }
-    })
-    return allowed
-  }
+    }
 
-  if (!pageAllowed(blockMap)) {
-    return { props: { post: null, blockMap: null } }
-  } else {
     return {
-      props: { post, blockMap },
+      props: { 
+        post, 
+        blockMap 
+      },
       revalidate: 1
     }
+  } catch (err) {
+    console.error(`Error in getStaticProps for subpage ${subpage}:`, err)
+    return { 
+      props: { 
+        post: null, 
+        blockMap: null 
+      } 
+    }
   }
+}
+
+// Yardımcı fonksiyon - sayfa izin kontrolü
+function isPageAllowed(blockMap) {
+  const NOTION_SPACES_ID = BLOG.notionSpacesId
+  
+  // Blokları kontrol et
+  for (const block of Object.values(blockMap.block)) {
+    if (block.value?.space_id && NOTION_SPACES_ID.includes(block.value.space_id)) {
+      return true
+    }
+  }
+  
+  return false
 }
 
 export default Post
