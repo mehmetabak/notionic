@@ -66,28 +66,19 @@ export async function getStaticProps({ params: { subpage } }) {
 
   let blockMap, post
   try {
-    const id = idToUuid(subpage) // It's better to convert the ID early
-    blockMap = await getPostBlocks(id)
+    blockMap = await getPostBlocks(subpage)
+    const id = idToUuid(subpage)
 
     const breadcrumbs = getPageBreadcrumbs(blockMap, id)
-    
-    // ✅ FIX: Check if breadcrumbs exist and are not empty
-    if (breadcrumbs && breadcrumbs.length > 0) {
-      post = posts.find((t) => t.id === breadcrumbs[0].block.id)
-    }
-
-    // When the page is not in the notion database, or no breadcrumbs were found,
-    // manually initialize the post object.
+    post = posts.find((t) => t.id === breadcrumbs[0].block.id)
+    // When the page is not in the notion database, manually initialize the post
     if (!post) {
-      // ✅ FIX: Get the title directly from the page's block data for a more reliable fallback.
-      const pageBlock = blockMap.block[id]?.value
-      const title = pageBlock?.properties?.title?.[0]?.[0] || 'Untitled'
       post = {
-        id: id,
         type: ['Page'],
-        title: title
+        title: breadcrumbs[0].title
       }
     }
+    // console.log("debug: ", breadcrumbs, post)
   } catch (err) {
     console.error(err)
     return { props: { post: null, blockMap: null } }
@@ -96,6 +87,7 @@ export async function getStaticProps({ params: { subpage } }) {
   // Allow only pages in your own space
   const NOTION_SPACES_ID = BLOG.notionSpacesId
   const pageAllowed = (page) => {
+    // When page block space_id = NOTION_SPACES_ID
     let allowed = false
     Object.values(page.block).forEach(block => {
       if (!allowed && block.value && block.value.space_id) {
@@ -105,7 +97,7 @@ export async function getStaticProps({ params: { subpage } }) {
     return allowed
   }
 
-  if (!blockMap || !pageAllowed(blockMap)) {
+  if (!pageAllowed(blockMap)) {
     return { props: { post: null, blockMap: null } }
   } else {
     return {
@@ -114,3 +106,5 @@ export async function getStaticProps({ params: { subpage } }) {
     }
   }
 }
+
+export default Post

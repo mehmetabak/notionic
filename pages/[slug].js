@@ -1,5 +1,3 @@
-// pages/[slug].js
-
 import Layout from '@/layouts/layout'
 import { getAllPosts, getPostBlocks } from '@/lib/notion'
 import BLOG from '@/blog.config'
@@ -8,7 +6,6 @@ import Loading from '@/components/Loading'
 import NotFound from '@/components/NotFound'
 
 const Post = ({ post, blockMap }) => {
-  // ... your component code remains the same
   const router = useRouter()
   if (router.isFallback) {
     return (
@@ -26,7 +23,7 @@ const Post = ({ post, blockMap }) => {
 export async function getStaticPaths() {
   const posts = await getAllPosts({ onlyNewsletter: false })
   return {
-    paths: [],
+    paths: posts.map((row) => `${BLOG.path}/${row.slug}`),
     fallback: true
   }
 }
@@ -34,12 +31,6 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params: { slug } }) {
   const posts = await getAllPosts({ onlyNewsletter: false })
   const post = posts.find((t) => t.slug === slug)
-
-  if (!post) {
-    return {
-      notFound: true
-    }
-  }
 
   try {
     const blockMap = await getPostBlocks(post.id)
@@ -53,7 +44,10 @@ export async function getStaticProps({ params: { slug } }) {
   } catch (err) {
     console.error(err)
     return {
-      notFound: true
+      props: {
+        post: null,
+        blockMap: null
+      }
     }
   }
 }
