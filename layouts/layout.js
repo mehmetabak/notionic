@@ -31,6 +31,7 @@ const Layout = ({ blockMap, frontMatter, fullWidth = false, subPage = false }) =
           frontMatter={frontMatter}
           blockMap={blockMap}
           pageTitle={showSubPageTitle ? pageTitle : null}
+          previewImagesMap={previewImagesMap}
         />
         <Aside
           frontMatter={frontMatter}
