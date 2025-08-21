@@ -6,9 +6,8 @@ const Logo = (props) => (
     xmlns="http://www.w3.org/2000/svg" 
     width={24} 
     height={24} 
-    // viewBox'ı logonun çerçeve içinde dolgun ve yakın görünmesi için ayarlandı.
-    viewBox="0 0 1916 1916"
-    // Dışarıdan renk verilmezse varsayılan renk beyaz olacak.
+    // ViewBox'ı daha da daraltarak logoyu çerçeve içinde daha büyük gösteriyoruz.
+    viewBox="150 150 1616 1616"
     color="white"
     {...props}
   >
@@ -20,9 +19,18 @@ const Logo = (props) => (
       fill="#2A2E39" // Sitenizdeki kartların arka plan rengine benzer bir renk
     />
 
-    {/* Orijinal SVG'nin doğru render edilmesi için transform özelliğine sahip <g> etiketi */}
-    {/* fill="currentColor" sayesinde ikonun rengi SVG'nin color özelliğinden gelir (beyaz) */}
-    <g transform="translate(0, 1916) scale(0.1, -0.1)" fill="currentColor">
+    {/* 
+      Logoyu daha belirgin yapmak için stroke (dış çizgi) eklendi.
+      stroke-width, transform'daki scale(0.1) ile orantılı olduğu için büyük bir değerdir.
+      stroke-linejoin="round" köşeleri yumuşatır.
+    */}
+    <g 
+      transform="translate(0, 1916) scale(0.1, -0.1)" 
+      fill="currentColor"
+      stroke="currentColor"
+      strokeWidth="150"
+      strokeLinejoin="round"
+    >
       <path d="M9150 19154 c-8 -2 -91 -8 -185 -14 -1438 -91 -2843 -509 -4107
       -1224 -1825 -1030 -3283 -2664 -4098 -4591 -394 -934 -631 -1885 -725 -2915
       -55 -606 -46 -1276 25 -1902 242 -2130 1186 -4113 2680 -5632 956 -971 2059
