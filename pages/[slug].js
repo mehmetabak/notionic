@@ -8,11 +8,10 @@ import NotFound from '@/components/NotFound'
 const Post = ({ post, blockMap }) => {
   const router = useRouter()
   if (router.isFallback) {
-    return (
-      <Loading />
-    )
+    return <Loading />
   }
   if (!post) {
+
     return <NotFound statusCode={404} />
   }
   return (
@@ -21,24 +20,33 @@ const Post = ({ post, blockMap }) => {
 }
 
 export async function getStaticPaths() {
-  const posts = await getAllPosts({ onlyNewsletter: false })
-  return {
-    paths: posts.map((row) => `${BLOG.path}/${row.slug}`),
-    fallback: true
+  try {
+    const posts = await getAllPosts({ onlyNewsletter: false })
+
+    const validPosts = posts.filter(post => post && post.slug)
+
+    return {
+      paths: validPosts.map((row) => `${BLOG.path}/${row.slug}`),
+      fallback: true
+    }
+  } catch (error) {
+    console.error('Failed to get posts for static paths:', error)
+    return {
+      paths: [],
+      fallback: true
+    }
   }
 }
 
 export async function getStaticProps({ params: { slug } }) {
-  const posts = await getAllPosts({ onlyNewsletter: false })
-  const post = posts.find((t) => t.slug === slug)
-
-  if (!post) {
-    return {
-      notFound: true
-    }
-  }
-
   try {
+    const posts = await getAllPosts({ onlyNewsletter: false })
+    const post = posts.find((t) => t && t.slug === slug) // Added check for `t`
+
+    if (!post || !post.id) {
+      return { notFound: true }
+    }
+
     const blockMap = await getPostBlocks(post.id)
     return {
       props: {
@@ -48,13 +56,9 @@ export async function getStaticProps({ params: { slug } }) {
       revalidate: 1
     }
   } catch (err) {
-    console.error(err)
-    return {
-      props: {
-        post: null,
-        blockMap: null
-      }
-    }
+    console.error(`Failed to get static props for slug: ${slug}`, err)
+
+    return { notFound: true }
   }
 }
 
