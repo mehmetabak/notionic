@@ -4,7 +4,6 @@ import BLOG from '@/blog.config'
 import { useRouter } from 'next/router'
 import Loading from '@/components/Loading'
 import NotFound from '@/components/NotFound'
-import { getPreviewImageMap } from '@/lib/preview-images'
 
 const Post = ({ post, blockMap }) => {
   const router = useRouter()
@@ -17,7 +16,7 @@ const Post = ({ post, blockMap }) => {
     return <NotFound statusCode={404} />
   }
   return (
-    <Layout blockMap={blockMap} frontMatter={post} fullWidth={post.fullWidth} previewImagesMap={previewImagesMap}/>
+    <Layout blockMap={blockMap} frontMatter={post} fullWidth={post.fullWidth} />
   )
 }
 
@@ -35,12 +34,10 @@ export async function getStaticProps({ params: { slug } }) {
 
   try {
     const blockMap = await getPostBlocks(post.id)
-    const previewImagesMap = await getPreviewImageMap(blockMap)
     return {
       props: {
         post,
-        blockMap,
-        previewImagesMap 
+        blockMap
       },
       revalidate: 1
     }
@@ -49,8 +46,7 @@ export async function getStaticProps({ params: { slug } }) {
     return {
       props: {
         post: null,
-        blockMap: null,
-        previewImagesMap: null
+        blockMap: null
       }
     }
   }

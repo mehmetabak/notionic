@@ -44,7 +44,7 @@ export default function Content (props) {
       <div className="-mt-4 relative">
         <NotionRenderer
           blockMap={blockMap}
-          previewImages={previewImagesMap}
+          previewImages={BLOG.previewImagesEnabled}
           {...props}
         />
       </div>
@@ -55,6 +55,5 @@ export default function Content (props) {
 Content.propTypes = {
   frontMatter: PropTypes.object.isRequired,
   blockMap: PropTypes.object.isRequired,
-  pageTitle: PropTypes.string,
-  previewImagesMap: PropTypes.object 
+  pageTitle: PropTypes.string
 }
