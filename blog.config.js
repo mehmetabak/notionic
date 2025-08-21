@@ -2,8 +2,8 @@ const BLOG = {
   title: 'm0s',
   author: 'Mehmet Abak',
   email: 'mehmetabak@proton.me',
-  link: 'https://m0s.space',
-  newsletter: 'm0s Weekly',
+  link: 'https://mehmetabak.space',
+  newsletter: 'm0s blog Weekly',
   description: 'a developer\'s blog',
   lang: 'en-US', // ['en-US', 'zh-CN', 'zh-HK', 'zh-TW', 'ja-JP', 'es-ES', 'tr-TR']
   timezone: 'Asia/Istanbul', // See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for all options.
