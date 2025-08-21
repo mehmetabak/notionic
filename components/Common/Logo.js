@@ -6,23 +6,23 @@ const Logo = (props) => (
     xmlns="http://www.w3.org/2000/svg" 
     width={24} 
     height={24} 
+    // viewBox'ı logonun çerçeve içinde dolgun ve yakın görünmesi için ayarlandı.
     viewBox="0 0 1916 1916"
+    // Dışarıdan renk verilmezse varsayılan renk beyaz olacak.
     color="white"
     {...props}
   >
-    {/* Arka plan çerçevesi aynı kalıyor */}
+    {/* Site estetiğiyle uyumlu, yuvarlatılmış köşeli arka plan */}
     <rect 
       width="1916" 
       height="1916" 
-      rx="280"
-      fill="#2A2E39"
+      rx="280" // Yuvarlak köşe değeri
+      fill="#2A2E39" // Sitenizdeki kartların arka plan rengine benzer bir renk
     />
 
-    {/* 
-      Logoyu büyütmek için scale değeri 0.1'den 0.115'e çıkarıldı.
-      Merkezde kalması için translate değerleri yeniden ayarlandı.
-    */}
-    <g transform="translate(-143.7, 2059.7) scale(0.115, -0.115)" fill="currentColor">
+    {/* Orijinal SVG'nin doğru render edilmesi için transform özelliğine sahip <g> etiketi */}
+    {/* fill="currentColor" sayesinde ikonun rengi SVG'nin color özelliğinden gelir (beyaz) */}
+    <g transform="translate(0, 1916) scale(0.1, -0.1)" fill="currentColor">
       <path d="M9150 19154 c-8 -2 -91 -8 -185 -14 -1438 -91 -2843 -509 -4107
       -1224 -1825 -1030 -3283 -2664 -4098 -4591 -394 -934 -631 -1885 -725 -2915
       -55 -606 -46 -1276 25 -1902 242 -2130 1186 -4113 2680 -5632 956 -971 2059
