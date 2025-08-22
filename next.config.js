@@ -8,6 +8,9 @@ module.exports = {
   images: {
     domains: ['api.craft.do', 'www.notion.so', 'images.unsplash.com', 's3.us-west-2.amazonaws.com']
   },
+  experimental: {
+    largePageDataBytes: 512 * 1000 // 512KB
+  },
   async headers() {
     return [
       {
