@@ -1,6 +1,7 @@
 import BLOG from '@/blog.config'
 import PropTypes from 'prop-types'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
 import FormattedDate from '@/components/Common/FormattedDate'
 import TagItem from '@/components/Common/TagItem'
@@ -10,6 +11,35 @@ import { ChevronLeftIcon } from '@heroicons/react/outline'
 
 export default function Content (props) {
   const { frontMatter, blockMap, pageTitle } = props
+  const [imagesLoaded, setImagesLoaded] = useState(false)
+
+  // Handle image loading state
+  useEffect(() => {
+    if (!BLOG.previewImagesEnabled) {
+      setImagesLoaded(true)
+      return
+    }
+
+    // Small delay to ensure preview images are processed
+    const timer = setTimeout(() => {
+      setImagesLoaded(true)
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [blockMap])
+
+  // Force re-render images on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined' && imagesLoaded) {
+      // Trigger a gentle re-render of images
+      const images = document.querySelectorAll('img[data-src]')
+      images.forEach(img => {
+        if (img.dataset.src && !img.src) {
+          img.src = img.dataset.src
+        }
+      })
+    }
+  }, [imagesLoaded])
 
   return (
     <article className='flex-none md:overflow-x-visible overflow-x-scroll w-full'>
@@ -42,9 +72,15 @@ export default function Content (props) {
         </nav>
       )}
       <div className="-mt-4 relative">
+        {/* Loading state için minimal indicator */}
+        {BLOG.previewImagesEnabled && !imagesLoaded && (
+          <div className="absolute inset-0 bg-gray-50 dark:bg-gray-800 opacity-50 pointer-events-none transition-opacity duration-300" />
+        )}
+        
         <NotionRenderer
           blockMap={blockMap}
-          previewImages={BLOG.previewImagesEnabled}
+          previewImages={BLOG.previewImagesEnabled && imagesLoaded}
+          forceRefreshImages={imagesLoaded}
           {...props}
         />
       </div>
