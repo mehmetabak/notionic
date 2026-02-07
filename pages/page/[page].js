@@ -44,16 +44,33 @@ export async function getStaticProps(context) {
 }
 
 export async function getStaticPaths() {
-  const posts = await getAllPosts({ onlyNewsletter: false })
-  const totalPosts = posts.length
-  const totalPages = Math.ceil(totalPosts / BLOG.postsPerPage)
-  
-  return {
-    // remove first page, we 're not gonna handle that.
-    paths: Array.from({ length: totalPages - 1 }, (_, i) => ({
-      params: { page: '' + (i + 2) }
-    })),
-    fallback: true
+  try {
+    const posts = await getAllPosts({ onlyNewsletter: false })
+    
+    // Null kontrolü ekle
+    if (!posts || !Array.isArray(posts) || posts.length === 0) {
+      return {
+        paths: [],
+        fallback: true
+      }
+    }
+    
+    const totalPosts = posts.length
+    const totalPages = Math.ceil(totalPosts / BLOG.postsPerPage)
+    
+    return {
+      // remove first page, we 're not gonna handle that.
+      paths: Array.from({ length: totalPages - 1 }, (_, i) => ({
+        params: { page: '' + (i + 2) }
+      })),
+      fallback: true
+    }
+  } catch (error) {
+    console.error('Error in getStaticPaths:', error)
+    return {
+      paths: [],
+      fallback: true
+    }
   }
 }
 
