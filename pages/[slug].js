@@ -30,14 +30,12 @@ export async function getStaticPaths() {
   const posts = await getAllPosts({ onlyNewsletter: false })
   
   return {
-    // FIX 1: getStaticPaths must return objects with a 'params' key, not strings.
-    paths: posts
-      .filter((row) => row.slug) // Ensure slug exists
-      .map((row) => ({
-        params: {
-          slug: row.slug
-        }
-      })),
+    // FIX 1: Paths must be objects with a 'params' key containing the slug
+    paths: posts.map((row) => ({
+      params: { 
+        slug: row.slug 
+      }
+    })),
     fallback: true
   }
 }
@@ -60,7 +58,7 @@ export async function getStaticProps({ params: { slug } }) {
 
     const blockMap = await getPostBlocks(post.id)
     
-    // Büyük data için optimizasyon ve temizleme
+    // Büyük data için optimizasyon - gereksiz alanları temizle
     const cleanedPost = cleanPostData(post)
     const cleanedBlockMap = cleanBlockMapData(blockMap)
     
@@ -87,18 +85,25 @@ export async function getStaticProps({ params: { slug } }) {
 function cleanPostData(post) {
   if (!post) return null
   
-  // FIX 2: Use deep cleaning.
-  // JSON.stringify automatically removes all keys with 'undefined' values.
-  // This prevents Next.js serialization errors.
+  // Preserve your logic for checking large text fields
+  Object.keys(post).forEach(key => {
+    if (typeof post[key] === 'string' && post[key].length > 10000) {
+      console.warn(`Large text field detected in post.${key}, consider optimization`)
+    }
+  })
+
+  // FIX 2: Deep clean. 
+  // JSON.stringify automatically removes ANY key with 'undefined' value at ANY depth.
+  // This is required because Notion data is nested deeper than your previous loop checked.
   return JSON.parse(JSON.stringify(post))
 }
 
 function cleanBlockMapData(blockMap) {
   if (!blockMap) return null
   
-  // FIX 3: Notion blocks are deeply nested. Manual iteration often misses
-  // undefined values deep inside 'format' or 'properties'. 
-  // Deep cleaning via JSON parsing is required here.
+  // FIX 3: Deep clean for BlockMap.
+  // The previous manual loop missed nested properties inside 'format' or 'properties',
+  // which causes the "Serialization Error".
   return JSON.parse(JSON.stringify(blockMap))
 }
 
