@@ -27,11 +27,27 @@ const Post = ({ post, blockMap }) => {
 }
 
 export async function getStaticPaths() {
-  const posts = await getAllPosts({ onlyNewsletter: false })
-  
-  return {
-    paths: posts.map((row) => `${BLOG.path}/${row.slug}`),
-    fallback: true
+  try {
+    const posts = await getAllPosts({ onlyNewsletter: false })
+    
+    // Null kontrolü ekle
+    if (!posts || !Array.isArray(posts)) {
+      return {
+        paths: [],
+        fallback: true
+      }
+    }
+    
+    return {
+      paths: posts.map((row) => `${BLOG.path}/${row.slug}`),
+      fallback: true
+    }
+  } catch (error) {
+    console.error('Error in getStaticPaths:', error)
+    return {
+      paths: [],
+      fallback: true
+    }
   }
 }
 
