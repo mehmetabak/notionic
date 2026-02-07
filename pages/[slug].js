@@ -1,4 +1,4 @@
-// [slug].js - Fixed version
+// [slug].js - Optimized & Fixed version
 import Layout from '@/layouts/layout'
 import { getAllPosts, getPostBlocks } from '@/lib/notion'
 import BLOG from '@/blog.config'
@@ -29,11 +29,11 @@ const Post = ({ post, blockMap }) => {
 export async function getStaticPaths() {
   const posts = await getAllPosts({ onlyNewsletter: false })
   
+  // FIX: Next.js prefers objects with 'params' for dynamic routes.
+  // Returning strings like `${BLOG.path}/${slug}` often causes path mismatches.
   return {
-    // FIX 1: Paths MUST be an array of objects with a 'params' key.
-    // Strings like `${BLOG.path}/${row.slug}` cause the build error.
     paths: posts
-      .filter(row => row.slug) // Safety check to ensure slug exists
+      .filter(row => row.slug) // Ensure slug exists
       .map((row) => ({
         params: {
           slug: row.slug
@@ -61,7 +61,7 @@ export async function getStaticProps({ params: { slug } }) {
 
     const blockMap = await getPostBlocks(post.id)
     
-    // Büyük data için optimizasyon - gereksiz alanları temizle
+    // Büyük data için optimizasyon ve temizleme
     const cleanedPost = cleanPostData(post)
     const cleanedBlockMap = cleanBlockMapData(blockMap)
     
@@ -88,25 +88,26 @@ export async function getStaticProps({ params: { slug } }) {
 function cleanPostData(post) {
   if (!post) return null
   
-  // Keep your large text warning logic
+  // Preserve your large text check
   Object.keys(post).forEach(key => {
     if (typeof post[key] === 'string' && post[key].length > 10000) {
       console.warn(`Large text field detected in post.${key}, consider optimization`)
     }
   })
   
-  // FIX 2: Deep cleaning using Serialization.
-  // Manual loop is insufficient for nested objects. 
-  // This removes all 'undefined' values which cause build failures.
+  // FIX: Use Deep Cleaning.
+  // JSON.stringify automatically removes keys with 'undefined' values at any depth.
+  // This prevents the "Serialization Error" that crashes the build.
   return JSON.parse(JSON.stringify(post))
 }
 
 function cleanBlockMapData(blockMap) {
   if (!blockMap) return null
   
-  // FIX 3: Deep cleaning for BlockMap.
-  // Notion blocks have deep nesting (block.value.properties...).
-  // This ensures no 'undefined' values remain anywhere in the object tree.
+  // FIX: Use Deep Cleaning.
+  // Notion blocks are complex nested objects. A manual loop often misses 
+  // undefined values inside 'format', 'properties', or 'style'.
+  // Deep cleaning is required here.
   return JSON.parse(JSON.stringify(blockMap))
 }
 
