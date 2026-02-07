@@ -15,18 +15,28 @@ const Page = ({ postsToShow, page, showNext }) => {
 }
 
 export async function getStaticProps(context) {
-  const { page } = context.params // Get Current Page No.
+  // 1. Ensure page is an integer (params are strings by default)
+  const page = parseInt(context.params.page, 10)
+  
   const posts = await getAllPosts({ onlyNewsletter: false })
+  
   const postsToShow = posts.slice(
     BLOG.postsPerPage * (page - 1),
     BLOG.postsPerPage * page
   )
+  
   const totalPosts = posts.length
   const showNext = page * BLOG.postsPerPage < totalPosts
+
+  // 2. Fix Serialization Error:
+  // Next.js crashes if props contain 'undefined'. Notion data often has undefined fields.
+  // We sanitize the data by stringifying and parsing it back.
+  const safePostsToShow = JSON.parse(JSON.stringify(postsToShow))
+
   return {
     props: {
-      page, // Current Page
-      postsToShow,
+      page, 
+      postsToShow: safePostsToShow,
       showNext
     },
     revalidate: 1
@@ -37,6 +47,7 @@ export async function getStaticPaths() {
   const posts = await getAllPosts({ onlyNewsletter: false })
   const totalPosts = posts.length
   const totalPages = Math.ceil(totalPosts / BLOG.postsPerPage)
+  
   return {
     // remove first page, we 're not gonna handle that.
     paths: Array.from({ length: totalPages - 1 }, (_, i) => ({
