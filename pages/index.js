@@ -11,12 +11,17 @@ export async function getStaticProps() {
   const heros = await getAllPosts({ onlyHidden: true })
   const hero = heros.find((t) => t.slug === 'index')
 
-  let blockMap
-  try {
-    blockMap = await getPostBlocks(hero.id)
-  } catch (err) {
-    console.error(err)
-    // return { props: { post: null, blockMap: null } }
+  let blockMap = null
+  if (!hero?.id) {
+    console.warn('Hero post not found for index page')
+  } else {
+    try {
+      blockMap = await getPostBlocks(hero.id)
+    } catch (err) {
+      console.error(err)
+      blockMap = null
+      // return { props: { post: null, blockMap: null } }
+    }
   }
 
   const postsToShow = posts.slice(0, BLOG.postsPerPage)
