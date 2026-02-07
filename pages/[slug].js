@@ -1,4 +1,4 @@
-// [slug].js - Optimized version
+// [slug].js - Fixed version
 import Layout from '@/layouts/layout'
 import { getAllPosts, getPostBlocks } from '@/lib/notion'
 import BLOG from '@/blog.config'
@@ -30,7 +30,14 @@ export async function getStaticPaths() {
   const posts = await getAllPosts({ onlyNewsletter: false })
   
   return {
-    paths: posts.map((row) => `${BLOG.path}/${row.slug}`),
+    // FIX 1: getStaticPaths must return objects with a 'params' key, not strings.
+    paths: posts
+      .filter((row) => row.slug) // Ensure slug exists
+      .map((row) => ({
+        params: {
+          slug: row.slug
+        }
+      })),
     fallback: true
   }
 }
@@ -53,7 +60,7 @@ export async function getStaticProps({ params: { slug } }) {
 
     const blockMap = await getPostBlocks(post.id)
     
-    // Büyük data için optimizasyon - gereksiz alanları temizle
+    // Büyük data için optimizasyon ve temizleme
     const cleanedPost = cleanPostData(post)
     const cleanedBlockMap = cleanBlockMapData(blockMap)
     
@@ -80,43 +87,19 @@ export async function getStaticProps({ params: { slug } }) {
 function cleanPostData(post) {
   if (!post) return null
   
-  // Undefined değerleri null ile değiştir ve gereksiz alanları kaldır
-  const cleaned = { ...post }
-  
-  // Tüm undefined değerleri null yap veya kaldır
-  Object.keys(cleaned).forEach(key => {
-    if (cleaned[key] === undefined) {
-      cleaned[key] = null
-    }
-    // Büyük veri alanlarını kontrol et ve gerekirse kısalt
-    if (typeof cleaned[key] === 'string' && cleaned[key].length > 10000) {
-      console.warn(`Large text field detected in post.${key}, consider optimization`)
-    }
-  })
-  
-  return cleaned
+  // FIX 2: Use deep cleaning.
+  // JSON.stringify automatically removes all keys with 'undefined' values.
+  // This prevents Next.js serialization errors.
+  return JSON.parse(JSON.stringify(post))
 }
 
 function cleanBlockMapData(blockMap) {
   if (!blockMap) return null
   
-  const cleaned = { ...blockMap }
-  
-  // Block map içindeki undefined değerleri temizle
-  if (cleaned.block) {
-    Object.keys(cleaned.block).forEach(blockId => {
-      const block = cleaned.block[blockId]
-      if (block && block.value) {
-        Object.keys(block.value).forEach(key => {
-          if (block.value[key] === undefined) {
-            delete block.value[key]
-          }
-        })
-      }
-    })
-  }
-  
-  return cleaned
+  // FIX 3: Notion blocks are deeply nested. Manual iteration often misses
+  // undefined values deep inside 'format' or 'properties'. 
+  // Deep cleaning via JSON parsing is required here.
+  return JSON.parse(JSON.stringify(blockMap))
 }
 
 export default Post
