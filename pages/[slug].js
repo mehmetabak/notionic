@@ -30,12 +30,15 @@ export async function getStaticPaths() {
   const posts = await getAllPosts({ onlyNewsletter: false })
   
   return {
-    // FIX 1: Paths must be objects with a 'params' key containing the slug
-    paths: posts.map((row) => ({
-      params: { 
-        slug: row.slug 
-      }
-    })),
+    // FIX 1: Paths MUST be an array of objects with a 'params' key.
+    // Strings like `${BLOG.path}/${row.slug}` cause the build error.
+    paths: posts
+      .filter(row => row.slug) // Safety check to ensure slug exists
+      .map((row) => ({
+        params: {
+          slug: row.slug
+        }
+      })),
     fallback: true
   }
 }
@@ -85,25 +88,25 @@ export async function getStaticProps({ params: { slug } }) {
 function cleanPostData(post) {
   if (!post) return null
   
-  // Preserve your logic for checking large text fields
+  // Keep your large text warning logic
   Object.keys(post).forEach(key => {
     if (typeof post[key] === 'string' && post[key].length > 10000) {
       console.warn(`Large text field detected in post.${key}, consider optimization`)
     }
   })
-
-  // FIX 2: Deep clean. 
-  // JSON.stringify automatically removes ANY key with 'undefined' value at ANY depth.
-  // This is required because Notion data is nested deeper than your previous loop checked.
+  
+  // FIX 2: Deep cleaning using Serialization.
+  // Manual loop is insufficient for nested objects. 
+  // This removes all 'undefined' values which cause build failures.
   return JSON.parse(JSON.stringify(post))
 }
 
 function cleanBlockMapData(blockMap) {
   if (!blockMap) return null
   
-  // FIX 3: Deep clean for BlockMap.
-  // The previous manual loop missed nested properties inside 'format' or 'properties',
-  // which causes the "Serialization Error".
+  // FIX 3: Deep cleaning for BlockMap.
+  // Notion blocks have deep nesting (block.value.properties...).
+  // This ensures no 'undefined' values remain anywhere in the object tree.
   return JSON.parse(JSON.stringify(blockMap))
 }
 
