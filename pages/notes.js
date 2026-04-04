@@ -8,7 +8,6 @@ export async function getStaticProps() {
   const { pagesJson, siteConfigObj } = await getBlocksMaps()
 
   const blocksJson = pagesJson
-  // Hide table header and home page on Archive page.
   for (let i = 0; i < blocksJson.length; i++) {
     const deleteTitleBlock = blocksJson[i].title === 'Title' ? blocksJson.splice(i, i + 1) : blocksJson
     const deleteIndexBlock = blocksJson[i].slug === 'index' ? blocksJson.splice(i, i + 1) : blocksJson
@@ -18,12 +17,18 @@ export async function getStaticProps() {
   const heros = await getAllPosts({ onlyHidden: true })
   const hero = heros.find((t) => t.slug === 'notes')
 
-  let blockMap
-  try {
-    blockMap = await getPostBlocks(hero.id)
-  } catch (err) {
-    console.error(err)
-    // return { props: { post: null, blockMap: null } }
+  let blockMap = null // ✅ default to null, not undefined
+
+  if (hero?.id) { // ✅ only fetch if hero actually exists
+    try {
+      const raw = await getPostBlocks(hero.id)
+      blockMap = JSON.parse(JSON.stringify(raw ?? null)) // ✅ strip undefined values
+    } catch (err) {
+      console.error('Failed to fetch notes hero blockMap:', err)
+      blockMap = null
+    }
+  } else {
+    console.warn('No hero post with slug "notes" found — skipping blockMap fetch')
   }
 
   return {
