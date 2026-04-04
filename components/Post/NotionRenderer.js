@@ -2,15 +2,11 @@ import BLOG from '@/blog.config'
 import PropTypes from 'prop-types'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
-
 import { NotionRenderer as Renderer } from 'react-notion-x'
 
-// Lazy-load some heavy components & override the renderers of some block types
 const components = {
-  // Code block
   Code: dynamic(() => {
     return import('react-notion-x/build/third-party/code').then(async module => {
-      // Additional prismjs syntax
       await Promise.all([
         import('prismjs/components/prism-bash'),
         import('prismjs/components/prism-c'),
@@ -37,33 +33,28 @@ const components = {
       return module.Code
     })
   }),
-  // Database block
   Collection: dynamic(() => {
     return import('react-notion-x/build/third-party/collection').then(module => module.Collection)
   }),
-  // Equation block & inline variant
   Equation: dynamic(() => {
     return import('react-notion-x/build/third-party/equation').then(module => module.Equation)
   })
 }
 
-/**
- * Notion page renderer
- *
- * A wrapper of react-notion-x/NotionRenderer with predefined `components` and `mapPageUrl`
- *
- * @param props - Anything that react-notion-x/NotionRenderer supports
- */
 export default function NotionRenderer (props) {
   const { locale } = useRouter()
+
+  // ✅ If there's no content to render, return nothing rather than crashing
+  if (!props.blockMap) return null
+
   const mapPageUrl = (id) => {
-    // console.log('mapPageUrl', BLOG.lang.split('-')[0])
     if (locale === BLOG.lang.split('-')[0]) {
       return '/s/' + id.replace(/-/g, '')
     } else {
       return '/' + locale + '/s/' + id.replace(/-/g, '')
     }
   }
+
   return (
     <Renderer
       components={components}
@@ -76,5 +67,5 @@ export default function NotionRenderer (props) {
 
 NotionRenderer.propTypes = {
   frontMatter: PropTypes.object.isRequired,
-  blockMap: PropTypes.object.isRequired
+  blockMap: PropTypes.object  // ✅ no longer required — Hero pages may not have a hero post
 }
