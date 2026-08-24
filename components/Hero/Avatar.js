@@ -1,6 +1,15 @@
 import Image from 'next/image'
+import { useRouter } from 'next/router'
+import { lang } from '@/lib/lang'
 
 const Avatar = ({ className = '' }) => {
+  const { locale } = useRouter()
+  const localeKey = locale ? locale.split('-')[0] : 'en'
+  const t = lang[localeKey] || lang.en
+
+  const statusTitle =
+    t?.HERO?.HOME?.STATUS_AVAILABLE || 'Available for projects & collaboration'
+
   return (
     <div className={`relative flex items-center justify-center mx-auto group select-none ${className}`}>
       {/* Ambient Breathing Glow Aura */}
@@ -26,8 +35,8 @@ const Avatar = ({ className = '' }) => {
 
           {/* Pulsating Online/Available Status Badge */}
           <div
-            className='absolute bottom-1 right-1 sm:bottom-2 sm:right-2 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white dark:bg-gray-900 shadow-lg border-2 border-white dark:border-gray-800 z-10'
-            title='Available for projects & collaboration'
+            className='absolute bottom-1 right-1 sm:bottom-2 sm:right-2 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white dark:bg-gray-900 shadow-lg border-2 border-white dark:border-gray-800 z-10 cursor-default'
+            title={statusTitle}
           >
             <span className='relative flex h-3 w-3'>
               <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75' />
