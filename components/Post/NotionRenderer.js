@@ -38,7 +38,15 @@ const components = {
   }),
   Equation: dynamic(() => {
     return import('react-notion-x/build/third-party/equation').then(module => module.Equation)
-  })
+  }),
+  Pdf: dynamic(
+    () => import('react-notion-x/build/third-party/pdf').then(module => module.Pdf),
+    { ssr: false }
+  ),
+  Modal: dynamic(
+    () => import('react-notion-x/build/third-party/modal').then(module => module.Modal),
+    { ssr: false }
+  )
 }
 
 export default function NotionRenderer (props) {
@@ -67,5 +75,5 @@ export default function NotionRenderer (props) {
 
 NotionRenderer.propTypes = {
   frontMatter: PropTypes.object.isRequired,
-  blockMap: PropTypes.object  // ✅ no longer required — Hero pages may not have a hero post
+  blockMap: PropTypes.object
 }
