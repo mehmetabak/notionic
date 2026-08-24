@@ -20,7 +20,7 @@ const RelatedPosts = ({ currentPost, posts = [] }) => {
   return (
     <section className='w-full my-10 pt-6 border-t border-gray-100 dark:border-gray-800'>
       <div className='flex items-center gap-2 mb-6'>
-        <SparklesIcon className='w-5 h-5 text-indigo-500 dark:text-indigo-400 shrink-0' />
+        <SparklesIcon className='w-5 h-5 text-blue-500 dark:text-blue-400 shrink-0' />
         <h2 className='text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100'>
           {t?.LAYOUT?.RELATED_POSTS || 'You might also like'}
         </h2>
@@ -53,11 +53,11 @@ const RelatedPosts = ({ currentPost, posts = [] }) => {
                 <span>
                   <FormattedDate date={post.date} />
                 </span>
-                <ArrowRightIcon className='w-4 h-4 text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all duration-300 shrink-0 ml-2' />
+                <ArrowRightIcon className='w-4 h-4 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-300 shrink-0 ml-2' />
               </div>
 
               <h3
-                className={`font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300 break-words leading-snug ${
+                className={`font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 break-words leading-snug ${
                   isSingle ? 'text-lg md:text-xl' : 'text-base md:text-lg line-clamp-2'
                 }`}
               >

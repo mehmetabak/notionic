@@ -145,32 +145,3 @@ nav {
   @apply bg-gradient-to-r from-gray-100 via-gray-100 group-hover:from-gray-200 group-hover:via-gray-200 dark:from-gray-700 dark:via-gray-700 dark:group-hover:from-gray-600 dark:group-hover:via-gray-600 to-transparent;
 }
 
-/* Avatar animations */
-@keyframes avatarFloat {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-@keyframes avatarGlow {
-  0%, 100% {
-    opacity: 0.35;
-    transform: scale(0.98);
-  }
-  50% {
-    opacity: 0.65;
-    transform: scale(1.04);
-  }
-}
-
-.animate-avatar-float {
-  animation: avatarFloat 4.5s ease-in-out infinite;
-}
-
-.animate-avatar-glow {
-  animation: avatarGlow 3.5s ease-in-out infinite;
-}
-

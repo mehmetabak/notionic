@@ -26,10 +26,10 @@ export default function ReadingProgress() {
   return (
     <div
       aria-hidden='true'
-      className='fixed top-0 left-0 right-0 h-[3px] z-50 pointer-events-none bg-transparent'
+      className='fixed top-0 left-0 right-0 h-[2.5px] z-50 pointer-events-none bg-transparent'
     >
       <div
-        className='h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-100 ease-out shadow-[0_0_8px_rgba(99,102,241,0.7)]'
+        className='h-full bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400 dark:from-blue-500 dark:via-sky-400 dark:to-cyan-300 transition-all duration-100 ease-out shadow-[0_0_8px_rgba(14,165,233,0.7)]'
         style={{ width: `${progress}%` }}
       />
     </div>
