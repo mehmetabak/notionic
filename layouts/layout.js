@@ -7,8 +7,16 @@ import Content from '@/components/Post/Content'
 import Aside from '@/components/Post/Aside'
 import Comments from '@/components/Post/Comments'
 import PostFooter from '@/components/Post/PostFooter'
+import RelatedPosts from '@/components/Post/RelatedPosts'
 
-const Layout = ({ blockMap, frontMatter, fullWidth = false, subPage = false, pageId }) => {
+const Layout = ({
+  blockMap,
+  frontMatter,
+  fullWidth = false,
+  subPage = false,
+  pageId,
+  relatedPosts = []
+}) => {
   const [showSubPageTitle, setShowSubPageTitle] = useState(false)
 
   const pageTitle = getPageTitle(blockMap)
@@ -39,6 +47,7 @@ const Layout = ({ blockMap, frontMatter, fullWidth = false, subPage = false, pag
           pageId={pageId}
         />
       </motion.div>
+      <RelatedPosts currentPost={frontMatter} posts={relatedPosts} />
       <PostFooter />
       <Comments frontMatter={frontMatter} />
     </Container>

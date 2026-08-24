@@ -9,7 +9,7 @@ import { defaultMapPageUrl } from 'react-notion-x'
 import Loading from '@/components/Loading'
 import NotFound from '@/components/NotFound'
 
-const Post = ({ post, blockMap, pageId }) => {
+const Post = ({ post, blockMap, pageId, relatedPosts = [] }) => {
   const router = useRouter()
 
   if (router.isFallback) {
@@ -26,6 +26,7 @@ const Post = ({ post, blockMap, pageId }) => {
       frontMatter={post}
       fullWidth={post.fullWidth}
       pageId={pageId}
+      relatedPosts={relatedPosts}
     />
   )
 }
@@ -189,11 +190,38 @@ export async function getStaticProps({ params: { subpage } }) {
       }
     }
 
+    const currentTags = post.tags || []
+    const otherPosts = allPosts.filter(
+      (p) =>
+        p.id !== post.id &&
+        p.type?.[0] !== 'Page' &&
+        (p.status?.[0] === 'Published' || p.status === 'Published')
+    )
+
+    const scoredPosts = otherPosts.map((p) => {
+      const pTags = p.tags || []
+      const sharedTags = currentTags.filter((t) => pTags.includes(t))
+      return {
+        post: p,
+        score: sharedTags.length
+      }
+    })
+
+    scoredPosts.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score
+      return new Date(b.post.date) - new Date(a.post.date)
+    })
+
+    const relatedPosts = scoredPosts
+      .slice(0, 2)
+      .map((item) => cleanPostData(item.post))
+
     return {
       props: {
         post: cleanPostData(post),
         blockMap: cleanBlockMapData(blockMap),
-        pageId: activeCrumb?.block?.id ?? currentPageId
+        pageId: activeCrumb?.block?.id ?? currentPageId,
+        relatedPosts
       },
       revalidate: 1
     }
@@ -203,8 +231,10 @@ export async function getStaticProps({ params: { subpage } }) {
       props: {
         post: null,
         blockMap: null,
-        pageId: null
-      }
+        pageId: null,
+        relatedPosts: []
+      },
+      revalidate: 1
     }
   }
 }

@@ -6,7 +6,7 @@ import { useRouter } from 'next/router'
 import Loading from '@/components/Loading'
 import NotFound from '@/components/NotFound'
 
-const Post = ({ post, blockMap }) => {
+const Post = ({ post, blockMap, relatedPosts = [] }) => {
   const router = useRouter()
   
   if (router.isFallback) {
@@ -23,6 +23,7 @@ const Post = ({ post, blockMap }) => {
       frontMatter={post} 
       fullWidth={post.fullWidth} 
       pageId={post.id}
+      relatedPosts={relatedPosts}
     />
   )
 }
@@ -62,7 +63,8 @@ export async function getStaticProps({ params: { slug } }) {
       return {
         props: {
           post: null,
-          blockMap: null
+          blockMap: null,
+          relatedPosts: []
         },
         revalidate: 1
       }
@@ -70,6 +72,33 @@ export async function getStaticProps({ params: { slug } }) {
 
     const blockMap = await getPostBlocks(post.id)
     
+    // İlgili yazıları (Related Posts) hesapla
+    const currentTags = post.tags || []
+    const otherPosts = posts.filter(
+      (p) =>
+        p.id !== post.id &&
+        p.type?.[0] !== 'Page' &&
+        (p.status?.[0] === 'Published' || p.status === 'Published')
+    )
+
+    const scoredPosts = otherPosts.map((p) => {
+      const pTags = p.tags || []
+      const sharedTags = currentTags.filter((t) => pTags.includes(t))
+      return {
+        post: p,
+        score: sharedTags.length
+      }
+    })
+
+    scoredPosts.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score
+      return new Date(b.post.date) - new Date(a.post.date)
+    })
+
+    const relatedPosts = scoredPosts
+      .slice(0, 2)
+      .map((item) => cleanPostData(item.post))
+
     // Büyük data için optimizasyon - gereksiz alanları temizle
     const cleanedPost = cleanPostData(post)
     const cleanedBlockMap = cleanBlockMapData(blockMap)
@@ -77,7 +106,8 @@ export async function getStaticProps({ params: { slug } }) {
     return {
       props: {
         post: cleanedPost,
-        blockMap: cleanedBlockMap
+        blockMap: cleanedBlockMap,
+        relatedPosts
       },
       revalidate: 1
     }
@@ -86,7 +116,8 @@ export async function getStaticProps({ params: { slug } }) {
     return {
       props: {
         post: null,
-        blockMap: null
+        blockMap: null,
+        relatedPosts: []
       },
       revalidate: 1
     }
