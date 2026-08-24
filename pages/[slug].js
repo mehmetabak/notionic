@@ -96,44 +96,12 @@ export async function getStaticProps({ params: { slug } }) {
 // Yardımcı fonksiyonlar - data temizleme
 function cleanPostData(post) {
   if (!post) return null
-  
-  // Undefined değerleri null ile değiştir ve gereksiz alanları kaldır
-  const cleaned = { ...post }
-  
-  // Tüm undefined değerleri null yap veya kaldır
-  Object.keys(cleaned).forEach(key => {
-    if (cleaned[key] === undefined) {
-      cleaned[key] = null
-    }
-    // Büyük veri alanlarını kontrol et ve gerekirse kısalt
-    if (typeof cleaned[key] === 'string' && cleaned[key].length > 10000) {
-      console.warn(`Large text field detected in post.${key}, consider optimization`)
-    }
-  })
-  
-  return cleaned
+  return JSON.parse(JSON.stringify(post))
 }
 
 function cleanBlockMapData(blockMap) {
   if (!blockMap) return null
-  
-  const cleaned = { ...blockMap }
-  
-  // Block map içindeki undefined değerleri temizle
-  if (cleaned.block) {
-    Object.keys(cleaned.block).forEach(blockId => {
-      const block = cleaned.block[blockId]
-      if (block && block.value) {
-        Object.keys(block.value).forEach(key => {
-          if (block.value[key] === undefined) {
-            delete block.value[key]
-          }
-        })
-      }
-    })
-  }
-  
-  return cleaned
+  return JSON.parse(JSON.stringify(blockMap))
 }
 
 export default Post
