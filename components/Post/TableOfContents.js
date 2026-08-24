@@ -95,7 +95,7 @@ export default function TableOfContents({
           <span className='ml-1'>{frontMatter.title}</span>
         </Link>
       )}
-      <div className='max-h-[70vh] overflow-y-auto'>
+      <div>
         {nodes.map((node) => {
           const level = getHeaderLevel(node)
           const levelStyles = getLevelStyles(level)

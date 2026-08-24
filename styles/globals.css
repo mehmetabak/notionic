@@ -112,10 +112,25 @@ nav {
 .table-of-contents {
   top: 90px;
   @apply hidden xl:block fixed;
-  @apply w-56 max-h-96 overflow-y-auto;
+  @apply w-60 max-h-[75vh] overflow-y-auto overflow-x-hidden;
   @apply text-sm text-gray-500 dark:text-gray-400;
   /* Responsive right positioning */
   right: max(2rem, calc((100vw - 1400px) / 2 + 2rem));
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+}
+
+.table-of-contents::-webkit-scrollbar {
+  width: 4px;
+}
+
+.table-of-contents::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.4);
+  border-radius: 4px;
+}
+
+.table-of-contents::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .table-of-contents .hover\:bg-gray-200:hover a {
