@@ -1,4 +1,3 @@
-// [subpage].js - Optimized version
 import BLOG from '@/blog.config'
 import Layout from '@/layouts/layout'
 import { getAllPosts, getPostBlocks } from '@/lib/notion'
@@ -10,22 +9,23 @@ import { defaultMapPageUrl } from 'react-notion-x'
 import Loading from '@/components/Loading'
 import NotFound from '@/components/NotFound'
 
-const Post = ({ post, blockMap }) => {
+const Post = ({ post, blockMap, pageId }) => {
   const router = useRouter()
-  
+
   if (router.isFallback) {
     return <Loading notionSlug={router.asPath.split('/')[2]} />
   }
-  
+
   if (!post) {
     return <NotFound statusCode={404} />
   }
-  
+
   return (
-    <Layout 
-      blockMap={blockMap} 
-      frontMatter={post} 
-      fullWidth={post.fullWidth} 
+    <Layout
+      blockMap={blockMap}
+      frontMatter={post}
+      fullWidth={post.fullWidth}
+      pageId={pageId}
     />
   )
 }
@@ -34,7 +34,6 @@ export async function getStaticPaths() {
   try {
     const mapPageUrl = defaultMapPageUrl(BLOG.notionPageId)
 
-    // Tüm sayfaları al
     const pages = await getAllPagesInSpace(
       BLOG.notionPageId,
       BLOG.notionSpacesId,
@@ -44,28 +43,22 @@ export async function getStaticPaths() {
       }
     )
 
-    // Subpage ID'lerini oluştur
     const subpageIds = Object.keys(pages)
       .map((pageId) => '/s' + mapPageUrl(pageId))
       .filter((path) => path && path !== '/s/')
 
-    // Post ve hero ID'lerini paralel olarak al
     const [posts, heros] = await Promise.all([
       getAllPosts({ onlyNewsletter: false }),
       getAllPosts({ onlyHidden: true })
     ])
 
-    // Post ID'lerini mapla
     const postIds = posts.map((post) => '/s' + mapPageUrl(post.id))
-    
-    // Hero ID'lerini mapla
     const heroIds = heros.map((hero) => '/s' + mapPageUrl(hero.id))
 
-    // Filtreleme işlemini optimize et
-    const filteredSubpages = subpageIds.filter(id => 
-      !postIds.includes(id) && !heroIds.includes(id)
+    const filteredSubpages = subpageIds.filter(
+      (id) => !postIds.includes(id) && !heroIds.includes(id)
     )
-    
+
     const allPaths = [...filteredSubpages, ...heroIds]
 
     return {
@@ -81,55 +74,77 @@ export async function getStaticPaths() {
   }
 }
 
+// Module-level cache: the spaceId of the blog root page.
+let _cachedRootSpaceId = null
+
+async function getRootSpaceId() {
+  if (_cachedRootSpaceId) return _cachedRootSpaceId
+  try {
+    const rootBlockMap = await getPostBlocks(BLOG.notionPageId)
+    if (rootBlockMap?.block) {
+      for (const block of Object.values(rootBlockMap.block)) {
+        if (block?.spaceId) {
+          _cachedRootSpaceId = block.spaceId
+          break
+        }
+        if (block?.value?.space_id) {
+          _cachedRootSpaceId = block.value.space_id
+          break
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Could not fetch root page spaceId for pageAllowed check:', err.message)
+  }
+  return _cachedRootSpaceId
+}
+
 export async function getStaticProps({ params: { subpage } }) {
-  // Geçersiz subpage parametrelerini erken filtrele
   if (!subpage || typeof subpage !== 'string' || subpage.length < 10) {
-    return { 
-      props: { 
-        post: null, 
-        blockMap: null 
-      } 
+    return {
+      props: {
+        post: null,
+        blockMap: null,
+        pageId: null
+      }
     }
   }
 
   try {
-    // BlockMap ve posts'u paralel olarak al
-    const [blockMap, posts] = await Promise.all([
+    const [blockMap, allPosts] = await Promise.all([
       getPostBlocks(subpage),
       getAllPosts({ onlyNewsletter: false })
     ])
 
-    // BlockMap geçerliliğini kontrol et
     if (!blockMap || !blockMap.block) {
-      return { 
-        props: { 
-          post: null, 
-          blockMap: null 
-        } 
+      return {
+        props: {
+          post: null,
+          blockMap: null,
+          pageId: null
+        }
       }
     }
 
-    const id = idToUuid(subpage)
-    const breadcrumbs = getPageBreadcrumbs(blockMap, id)
-    
-    // Breadcrumbs kontrolü
-    if (!breadcrumbs || breadcrumbs.length === 0) {
-      return { 
-        props: { 
-          post: null, 
-          blockMap: null 
-        } 
-      }
+    const currentPageId = idToUuid(subpage)
+    const breadcrumbs = getPageBreadcrumbs(blockMap, currentPageId) || []
+    const activeCrumb = breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1] : null
+
+    // Walk leaf -> root to find nearest ancestor in known posts
+    let ancestorPost = null
+    for (let i = breadcrumbs.length - 1; i >= 0; i--) {
+      ancestorPost = allPosts.find((t) => t.id === breadcrumbs[i]?.block?.id)
+      if (ancestorPost) break
     }
-    
-    // Post'u bul veya manuel olarak oluştur
-    let post = posts.find((t) => t.id === breadcrumbs[0]?.block?.id)
-    
-    if (!post && breadcrumbs[0]) {
+
+    let post
+    if (ancestorPost) {
+      post = { ...ancestorPost, title: activeCrumb?.title || ancestorPost.title }
+    } else {
       post = {
         type: ['Page'],
-        title: breadcrumbs[0].title || 'Untitled',
-        id: breadcrumbs[0].block?.id || id,
+        title: activeCrumb?.title || breadcrumbs[0]?.title || 'Untitled',
+        id: activeCrumb?.block?.id || currentPageId,
         slug: null,
         status: ['Published'],
         date: null,
@@ -138,112 +153,88 @@ export async function getStaticProps({ params: { subpage } }) {
       }
     }
 
-    // Sayfa izin kontrolü
-    if (!isPageAllowed(blockMap)) {
-      return { 
-        props: { 
-          post: null, 
-          blockMap: null 
-        } 
+    const NOTION_SPACES_ID = BLOG.notionSpacesId
+    const rootSpaceId = await getRootSpaceId()
+
+    const pageAllowed = (page) => {
+      const foundSpaceIds = new Set()
+      Object.values(page.block || {}).forEach((block) => {
+        if (block?.spaceId) foundSpaceIds.add(block.spaceId)
+        if (block?.value?.space_id) foundSpaceIds.add(block.value.space_id)
+      })
+
+      if (foundSpaceIds.size === 0) return true
+
+      for (const id of foundSpaceIds) {
+        if (
+          NOTION_SPACES_ID &&
+          (NOTION_SPACES_ID.includes(id) || id.includes(NOTION_SPACES_ID))
+        ) {
+          return true
+        }
+        if (rootSpaceId && id === rootSpaceId) {
+          return true
+        }
+      }
+      return false
+    }
+
+    if (!pageAllowed(blockMap)) {
+      return {
+        props: {
+          post: null,
+          blockMap: null,
+          pageId: null
+        }
       }
     }
 
-    // Data temizleme
-    const cleanedPost = cleanPostData(post)
-    const cleanedBlockMap = cleanBlockMapData(blockMap)
-
     return {
-      props: { 
-        post: cleanedPost, 
-        blockMap: cleanedBlockMap 
+      props: {
+        post: cleanPostData(post),
+        blockMap: cleanBlockMapData(blockMap),
+        pageId: activeCrumb?.block?.id ?? currentPageId
       },
       revalidate: 1
     }
   } catch (err) {
     console.error(`Error in getStaticProps for subpage ${subpage}:`, err)
-    return { 
-      props: { 
-        post: null, 
-        blockMap: null 
-      } 
+    return {
+      props: {
+        post: null,
+        blockMap: null,
+        pageId: null
+      }
     }
   }
 }
 
-// Yardımcı fonksiyonlar
-function isPageAllowed(blockMap) {
-  const NOTION_SPACES_ID = BLOG.notionSpacesId
-  
-  // Blokları kontrol et
-  for (const block of Object.values(blockMap.block)) {
-    if (block.value?.space_id && NOTION_SPACES_ID.includes(block.value.space_id)) {
-      return true
-    }
-  }
-  
-  return false
-}
-
-// Data temizleme fonksiyonları
 function cleanPostData(post) {
   if (!post) return null
-  
   const cleaned = { ...post }
-  
-  // Tüm undefined değerleri null ile değiştir
-  Object.keys(cleaned).forEach(key => {
+  Object.keys(cleaned).forEach((key) => {
     if (cleaned[key] === undefined) {
       cleaned[key] = null
     }
-    // Büyük string alanlarını kontrol et
-    if (typeof cleaned[key] === 'string' && cleaned[key].length > 10000) {
-      console.warn(`Large text field detected in post.${key}`)
-    }
   })
-  
   return cleaned
 }
 
 function cleanBlockMapData(blockMap) {
   if (!blockMap) return null
-  
   const cleaned = { ...blockMap }
-  
-  // Block map içindeki undefined değerleri temizle
   if (cleaned.block) {
-    Object.keys(cleaned.block).forEach(blockId => {
+    Object.keys(cleaned.block).forEach((blockId) => {
       const block = cleaned.block[blockId]
       if (block && block.value) {
-        // Undefined değerleri kaldır
-        Object.keys(block.value).forEach(key => {
+        Object.keys(block.value).forEach((key) => {
           if (block.value[key] === undefined) {
             delete block.value[key]
           }
         })
-        
-        // Büyük text blokları için optimizasyon
-        if (block.value.type === 'text' && 
-            block.value.properties?.title?.[0]?.[0]?.length > 5000) {
-          console.warn(`Large text block detected: ${blockId}`)
-        }
       }
     })
   }
-  
-  // Collection data temizleme
-  if (cleaned.collection) {
-    Object.keys(cleaned.collection).forEach(collectionId => {
-      const collection = cleaned.collection[collectionId]
-      if (collection && collection.value) {
-        Object.keys(collection.value).forEach(key => {
-          if (collection.value[key] === undefined) {
-            delete collection.value[key]
-          }
-        })
-      }
-    })
-  }
-  
   return cleaned
 }
 

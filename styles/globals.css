@@ -1,14 +1,20 @@
+@import './prism.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import './prism.css';
 
 html {
   --scrollbarBG: #ffffff00;
   --thumbBG: #b8b8b8;
+  --color-inverse: #E5E7EB;
   overflow-y: scroll;
   overflow-x: auto;
 }
+
+html.dark {
+  --color-inverse: #212936;
+}
+
 html::-webkit-scrollbar {
   width: 5px;
 }
@@ -31,7 +37,7 @@ html::-webkit-scrollbar-thumb {
   position: sticky;
   z-index: 10;
   top: -1px;
-  backdrop-filter: blur(5px);
+  backdrop-filter: none;
   transition: all 0.5s cubic-bezier(0.4, 0, 0, 1);
   border-bottom-color: transparent;
 }
@@ -42,10 +48,11 @@ html::-webkit-scrollbar-thumb {
 
 .sticky-nav-full {
   @apply border-none;
+  backdrop-filter: blur(5px);
 }
 
-.sticky-nav-full .nav {
-  @apply text-gray-600 dark:text-gray-300;
+.sticky-nav-full .nav-bar-pill {
+  @apply bg-transparent dark:bg-transparent rounded-none;
 }
 
 nav {
@@ -55,6 +62,10 @@ nav {
 
 .nav-func-btn {
   margin-top: 0.15rem;
+}
+
+.nav-hover {
+  @apply hover:bg-gray-500/20 dark:hover:bg-gray-300/20;
 }
 
 .article-tags::-webkit-scrollbar {
@@ -93,8 +104,22 @@ nav {
 @supports not (backdrop-filter: none) {
   .sticky-nav-full {
     backdrop-filter: none;
-    @apply bg-day bg-opacity-90 dark:bg-night dark:bg-opacity-90;
+    @apply bg-day/90 dark:bg-night/90;
   }
+}
+
+/* Table of contents component styles */
+.table-of-contents {
+  top: 90px;
+  @apply hidden xl:block fixed;
+  @apply w-56 max-h-96 overflow-y-auto;
+  @apply text-sm text-gray-500 dark:text-gray-400;
+  /* Responsive right positioning */
+  right: max(2rem, calc((100vw - 1400px) / 2 + 2rem));
+}
+
+.table-of-contents .hover\:bg-gray-200:hover a {
+  @apply text-blue-600 dark:text-blue-400;
 }
 
 .md-cover {

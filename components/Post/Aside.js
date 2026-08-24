@@ -6,19 +6,31 @@ import TableOfContents from '@/components/Post/TableOfContents'
 import WechatPay from '@/components/Post/WechatPay'
 import { ThumbUpIcon, ChevronLeftIcon, ArrowUpIcon } from '@heroicons/react/outline'
 
-const Aside = ({ pageTitle, blockMap, frontMatter }) => {
+const Aside = ({ pageTitle, blockMap, frontMatter, pageId }) => {
   const [showPay, setShowPay] = useState(false)
   const [showScrollElement, setShowScrollElement] = useState(false)
 
   useEffect(() => {
-    window.addEventListener('scroll', () => {
-      if (window.pageYOffset > 400) {
-        setShowScrollElement(true)
-      } else {
-        setShowScrollElement(false)
-      }
-    })
-  }, [frontMatter, pageTitle])
+    let raf = 0
+    const onScroll = () => {
+      if (raf) return
+      raf = window.requestAnimationFrame(() => {
+        raf = 0
+        if (window.pageYOffset > 400) {
+          setShowScrollElement(true)
+        } else {
+          setShowScrollElement(false)
+        }
+      })
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (raf) window.cancelAnimationFrame(raf)
+    }
+  }, [])
+
   return (
     <>
       <aside className='hidden sticky md:flex md:flex-col md:items-center md:self-start md:ml-8 md:inset-y-1/2'>
@@ -59,8 +71,10 @@ const Aside = ({ pageTitle, blockMap, frontMatter }) => {
             <TableOfContents
               className="sticky"
               blockMap={blockMap}
+              pageId={pageId}
               pageTitle={pageTitle}
               frontMatter={frontMatter}
+              showScrollElement={showScrollElement}
             />
           </div>
         )}

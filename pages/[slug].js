@@ -22,6 +22,7 @@ const Post = ({ post, blockMap }) => {
       blockMap={blockMap} 
       frontMatter={post} 
       fullWidth={post.fullWidth} 
+      pageId={post.id}
     />
   )
 }

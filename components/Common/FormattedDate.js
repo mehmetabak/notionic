@@ -1,40 +1,55 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import BLOG from '@/blog.config'
-
 import dayjs from 'dayjs'
 import localizedFormat from 'dayjs/plugin/localizedFormat'
 
-// Set the default language to BLOG.lang
 dayjs.extend(localizedFormat)
-const lang = BLOG.lang.slice(0, 2)
-import(`dayjs/locale/${lang}`)
-  .then(() => {
-    dayjs.locale(BLOG.lang.slice(0, 2))
-  })
-  .catch(() => console.warn(`dayjs locale \`${lang}\` not found`))
 
-export default function FormattedDate ({ date }) {
-  const [ hasMounted, setHasMounted ] = useState(false)
+const LOCALE_MAP = {
+  zh: 'zh-cn',
+  en: 'en',
+  tr: 'tr',
+  es: 'es',
+  ja: 'ja'
+}
+
+function toDayjsLocale(locale) {
+  if (!locale) return LOCALE_MAP[BLOG.lang.slice(0, 2)] || BLOG.lang.slice(0, 2)
+  return LOCALE_MAP[locale] || locale
+}
+
+const LOCALE_LOADERS = {
+  'zh-cn': () => import('dayjs/locale/zh-cn'),
+  en: () => import('dayjs/locale/en'),
+  tr: () => import('dayjs/locale/tr'),
+  es: () => import('dayjs/locale/es'),
+  ja: () => import('dayjs/locale/ja')
+}
+
+function loadDayjsLocale(dayjsLocale) {
+  const loader = LOCALE_LOADERS[dayjsLocale]
+  if (loader) return loader()
+  return Promise.resolve()
+}
+
+export default function FormattedDate({ date }) {
   const { locale } = useRouter()
+  const [formattedDate, setFormattedDate] = useState(null)
 
-  // When switching languages, the date format will also change correspondingly.
-  const formattedDate = useMemo(() => {
-    try {
-      import(`dayjs/locale/${locale}`)
-      dayjs.locale(locale)
-    } catch (err) {
-      console.warn(`dayjs locale \`${locale}\` not found`)
-    }
-    return dayjs(date).format('ll')
+  useEffect(() => {
+    const dayjsLocale = toDayjsLocale(locale)
+    loadDayjsLocale(dayjsLocale)
+      .then(() => {
+        dayjs.locale(dayjsLocale)
+        setFormattedDate(dayjs(date).format('ll'))
+      })
+      .catch(() => {
+        setFormattedDate(dayjs(date).format('ll'))
+      })
   }, [locale, date])
 
-  // Solving the problem of inconsistent rendering between server-side and client-side.
-  useEffect(() => {
-    setHasMounted(true)
-  }, [locale])
-
-  if (!hasMounted) {
+  if (!formattedDate) {
     return null
   }
   return <span>{formattedDate}</span>
