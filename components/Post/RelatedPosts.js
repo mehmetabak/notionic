@@ -8,29 +8,34 @@ import { SparklesIcon, ArrowRightIcon } from '@heroicons/react/outline'
 
 const RelatedPosts = ({ currentPost, posts = [] }) => {
   const { locale } = useRouter()
-  const t = lang[locale] || lang.en
+  const localeKey = locale ? locale.split('-')[0] : 'en'
+  const t = lang[localeKey] || lang.en
 
   if (!posts || posts.length === 0 || currentPost?.type?.[0] === 'Page') {
     return null
   }
+
+  const isSingle = posts.length === 1
 
   return (
     <section className='w-full my-10 pt-6 border-t border-gray-100 dark:border-gray-800'>
       <div className='flex items-center gap-2 mb-6'>
         <SparklesIcon className='w-5 h-5 text-indigo-500 dark:text-indigo-400' />
         <h2 className='text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100'>
-          {t.LAYOUT.RELATED_POSTS}
+          {t?.LAYOUT?.RELATED_POSTS || 'You might also like'}
         </h2>
       </div>
 
-      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+      <div className={`grid gap-4 ${isSingle ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
         {posts.map((post) => (
           <Link
             key={post.id}
             passHref
             href={`${BLOG.path}/${post.slug}`}
             scroll={false}
-            className='group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-gray-200/70 dark:border-gray-700/60 bg-white/70 dark:bg-gray-800/60 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-500 cursor-pointer'
+            className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-gray-200/70 dark:border-gray-700/60 bg-white/70 dark:bg-gray-800/60 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-500 cursor-pointer ${
+              isSingle ? 'w-full md:p-6' : ''
+            }`}
           >
             <Image
               fill
@@ -47,12 +52,16 @@ const RelatedPosts = ({ currentPost, posts = [] }) => {
                 <ArrowRightIcon className='w-4 h-4 text-gray-400 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all duration-300' />
               </div>
 
-              <h3 className='text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300'>
+              <h3 className={`font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300 ${
+                isSingle ? 'text-lg md:text-xl' : 'text-base md:text-lg line-clamp-2'
+              }`}>
                 {post.title}
               </h3>
 
               {post.summary && (
-                <p className='text-xs md:text-sm font-light text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed mb-4'>
+                <p className={`text-xs md:text-sm font-light text-gray-600 dark:text-gray-300 leading-relaxed mb-4 ${
+                  isSingle ? 'line-clamp-3 md:line-clamp-2' : 'line-clamp-2'
+                }`}>
                   {post.summary}
                 </p>
               )}
@@ -60,7 +69,7 @@ const RelatedPosts = ({ currentPost, posts = [] }) => {
 
             {post.tags && post.tags.length > 0 && (
               <div className='relative z-10 flex flex-wrap gap-1.5 mt-auto pt-2'>
-                {post.tags.slice(0, 3).map((tag) => (
+                {post.tags.slice(0, 5).map((tag) => (
                   <span
                     key={tag}
                     className='text-[11px] font-normal px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700/80 text-gray-600 dark:text-gray-300'
