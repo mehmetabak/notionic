@@ -1,34 +1,43 @@
-import * as React from 'react'
+import Image from 'next/image'
 
-const Avatar = (props) => (
-  <svg
-    xmlns='http://www.w3.org/2000/svg'
-    viewBox='0 0 500 500'
-    style={{
-      opacity: 1
-    }}
-    {...props}
-  >
-    <clipPath id='shape'>
-      <path id='blob'>
-        <animate
-          attributeName='d'
-          dur='10s'
-          repeatCount='indefinite'
-          values='M440.5,320.5Q418,391,355.5,442.5Q293,494,226,450.5Q159,407,99,367Q39,327,31.5,247.5Q24,168,89,125.5Q154,83,219.5,68Q285,53,335.5,94.5Q386,136,424.5,193Q463,250,440.5,320.5Z;M453.78747,319.98894Q416.97789,389.97789,353.96683,436.87838Q290.95577,483.77887,223.95577,447.43366Q156.95577,411.08845,105.64373,365.97789Q54.33169,320.86732,62.67444,252.61056Q71.01719,184.3538,113.01965,135.21007Q155.02211,86.06634,220.52211,66.46683Q286.02211,46.86732,335.5,91.94472Q384.97789,137.02211,437.78747,193.51106Q490.59704,250,453.78747,319.98894Z;M411.39826,313.90633Q402.59677,377.81265,342.92059,407.63957Q283.24442,437.46649,215.13648,432.5428Q147.02853,427.61911,82.23325,380.9572Q17.43796,334.29529,20.45223,250.83809Q23.46649,167.38089,82.5856,115.05707Q141.70471,62.73325,212.19045,63.73015Q282.67618,64.72705,352.67308,84.79839Q422.66998,104.86972,421.43486,177.43486Q420.19974,250,411.39826,313.90633Z;M440.5,320.5Q418,391,355.5,442.5Q293,494,226,450.5Q159,407,99,367Q39,327,31.5,247.5Q24,168,89,125.5Q154,83,219.5,68Q285,53,335.5,94.5Q386,136,424.5,193Q463,250,440.5,320.5Z;'
-        />
-      </path>
-    </clipPath>
-    <image
-      x='0'
-      y='0'
-      width='100%'
-      height='100%'
-      clipPath='url(#shape)'
-      href='https://github.com/mehmetabak.png'
-      preserveAspectRatio='xMidYMid slice'
-    />
-  </svg>
-)
+const Avatar = ({ className = '' }) => {
+  return (
+    <div className={`relative flex items-center justify-center mx-auto group select-none ${className}`}>
+      {/* Ambient Breathing Glow Aura */}
+      <div
+        aria-hidden='true'
+        className='absolute -inset-3 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 opacity-40 dark:opacity-50 blur-2xl animate-avatar-glow transition-all duration-500 group-hover:opacity-75 group-hover:blur-3xl pointer-events-none'
+      />
+
+      {/* Modern Gradient Border Ring with Float Animation */}
+      <div className='relative animate-avatar-float'>
+        <div className='relative p-1 sm:p-1.5 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 shadow-2xl transition-transform duration-500 group-hover:scale-[1.03]'>
+          {/* Avatar Image Frame */}
+          <div className='relative w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-60 lg:h-60 rounded-full overflow-hidden bg-white dark:bg-gray-900 border-2 border-white dark:border-gray-800'>
+            <Image
+              fill
+              priority
+              alt='Mehmet Abak'
+              src='https://github.com/mehmetabak.png'
+              sizes='(max-width: 640px) 144px, (max-width: 768px) 192px, 240px'
+              className='object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105'
+            />
+          </div>
+
+          {/* Pulsating Online/Available Status Badge */}
+          <div
+            className='absolute bottom-1 right-1 sm:bottom-2 sm:right-2 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white dark:bg-gray-900 shadow-lg border-2 border-white dark:border-gray-800 z-10'
+            title='Available for projects & collaboration'
+          >
+            <span className='relative flex h-3 w-3'>
+              <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75' />
+              <span className='relative inline-flex rounded-full h-3 w-3 bg-emerald-500' />
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default Avatar

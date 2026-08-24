@@ -8,6 +8,7 @@ import Aside from '@/components/Post/Aside'
 import Comments from '@/components/Post/Comments'
 import PostFooter from '@/components/Post/PostFooter'
 import RelatedPosts from '@/components/Post/RelatedPosts'
+import ReadingProgress from '@/components/Common/ReadingProgress'
 
 const Layout = ({
   blockMap,
@@ -34,6 +35,7 @@ const Layout = ({
       type='article'
       fullWidth={fullWidth}
     >
+      <ReadingProgress />
       <motion.div className='flex flex-row'>
         <Content
           frontMatter={frontMatter}

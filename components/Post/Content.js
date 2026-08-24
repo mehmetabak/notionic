@@ -1,17 +1,24 @@
 import BLOG from '@/blog.config'
 import PropTypes from 'prop-types'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/router'
 
 import FormattedDate from '@/components/Common/FormattedDate'
 import TagItem from '@/components/Common/TagItem'
 import NotionRenderer from '@/components/Post/NotionRenderer'
+import { getReadingTime } from '@/lib/readingTime'
 
-import { ChevronLeftIcon } from '@heroicons/react/outline'
+import { ChevronLeftIcon, ClockIcon } from '@heroicons/react/outline'
 
 export default function Content (props) {
   const { frontMatter, blockMap, pageTitle } = props
   const [imagesLoaded, setImagesLoaded] = useState(false)
+  const { locale } = useRouter()
+
+  const readingStats = useMemo(() => {
+    return getReadingTime(blockMap, locale)
+  }, [blockMap, locale])
 
   // Handle image loading state
   useEffect(() => {
@@ -57,13 +64,21 @@ export default function Content (props) {
       <h1 className='font-bold text-3xl text-black dark:text-white'>
         {pageTitle ? pageTitle : frontMatter.title}
       </h1>
-      {frontMatter.type[0] !== 'Page' && (
-        <nav className='flex mt-5 mb-10 items-start text-gray-500 dark:text-gray-400'>
-          <div className='mr-2 mb-4 md:ml-0'>
+      {frontMatter.type?.[0] !== 'Page' && (
+        <nav className='flex flex-wrap mt-4 mb-8 items-center text-sm text-gray-500 dark:text-gray-400 gap-x-4 gap-y-2'>
+          <div className='flex items-center'>
             <FormattedDate date={frontMatter.date} />
           </div>
+
+          {readingStats && (
+            <div className='flex items-center text-xs md:text-sm text-gray-500 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-800/80 px-2.5 py-1 rounded-full'>
+              <ClockIcon className='w-3.5 h-3.5 mr-1 text-gray-400 dark:text-gray-500' />
+              <span>{readingStats.text}</span>
+            </div>
+          )}
+
           {frontMatter.tags && (
-            <div className='flex flex-nowrap max-w-full overflow-x-auto article-tags'>
+            <div className='flex flex-wrap items-center gap-1 article-tags'>
               {frontMatter.tags.map((tag) => (
                 <TagItem key={tag} tag={tag} />
               ))}
