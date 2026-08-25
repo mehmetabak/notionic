@@ -3,36 +3,61 @@ import PropTypes from 'prop-types'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import { NotionRenderer as Renderer } from 'react-notion-x'
+import { getTextContent } from 'notion-utils'
+
+const Mermaid = dynamic(() => import('@/components/Post/Mermaid'), {
+  ssr: false
+})
+
+const BaseCode = dynamic(() => {
+  return import('react-notion-x/build/third-party/code').then(async module => {
+    await Promise.all([
+      import('prismjs/components/prism-bash'),
+      import('prismjs/components/prism-c'),
+      import('prismjs/components/prism-cpp'),
+      import('prismjs/components/prism-docker'),
+      import('prismjs/components/prism-java'),
+      import('prismjs/components/prism-js-templates'),
+      import('prismjs/components/prism-kotlin'),
+      import('prismjs/components/prism-diff'),
+      import('prismjs/components/prism-git'),
+      import('prismjs/components/prism-go'),
+      import('prismjs/components/prism-graphql'),
+      import('prismjs/components/prism-makefile'),
+      import('prismjs/components/prism-markdown'),
+      import('prismjs/components/prism-python'),
+      import('prismjs/components/prism-r'),
+      import('prismjs/components/prism-rust'),
+      import('prismjs/components/prism-solidity'),
+      import('prismjs/components/prism-sql'),
+      import('prismjs/components/prism-swift'),
+      import('prismjs/components/prism-wasm'),
+      import('prismjs/components/prism-yaml')
+    ])
+    return module.Code
+  })
+})
+
+function CustomCode (props) {
+  const { block } = props
+  const language = (
+    block?.properties?.language?.[0]?.[0] ||
+    block?.format?.code_language ||
+    ''
+  ).toLowerCase()
+
+  if (language === 'mermaid') {
+    const code = block?.properties?.title
+      ? getTextContent(block.properties.title)
+      : ''
+    return <Mermaid chart={code} id={block?.id} />
+  }
+
+  return <BaseCode {...props} />
+}
 
 const components = {
-  Code: dynamic(() => {
-    return import('react-notion-x/build/third-party/code').then(async module => {
-      await Promise.all([
-        import('prismjs/components/prism-bash'),
-        import('prismjs/components/prism-c'),
-        import('prismjs/components/prism-cpp'),
-        import('prismjs/components/prism-docker'),
-        import('prismjs/components/prism-java'),
-        import('prismjs/components/prism-js-templates'),
-        import('prismjs/components/prism-kotlin'),
-        import('prismjs/components/prism-diff'),
-        import('prismjs/components/prism-git'),
-        import('prismjs/components/prism-go'),
-        import('prismjs/components/prism-graphql'),
-        import('prismjs/components/prism-makefile'),
-        import('prismjs/components/prism-markdown'),
-        import('prismjs/components/prism-python'),
-        import('prismjs/components/prism-r'),
-        import('prismjs/components/prism-rust'),
-        import('prismjs/components/prism-solidity'),
-        import('prismjs/components/prism-sql'),
-        import('prismjs/components/prism-swift'),
-        import('prismjs/components/prism-wasm'),
-        import('prismjs/components/prism-yaml')
-      ])
-      return module.Code
-    })
-  }),
+  Code: CustomCode,
   Collection: dynamic(() => {
     return import('react-notion-x/build/third-party/collection').then(module => module.Collection)
   }),
